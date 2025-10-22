@@ -6,38 +6,45 @@
   <title>TWC | Disponibilità Ho.Re.Ca.</title>
   <style>
     :root{
-      --bg:#0f1115; --panel:#171a21; --muted:#8b95a7; --text:#e6eaf2; --brand:#b48bff; --accent:#5be49b; --danger:#ff6b6b; --border:#252a34;
+      --bg:#0f1115; --panel:#171a21; --muted:#8b95a7; --text:#e6eaf2;
+      --brand:#b48bff; --accent:#5be49b; --danger:#ff6b6b; --border:#252a34;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
     a{color:var(--brand)}
     .container{max-width:1200px;margin:0 auto;padding:24px}
     header{display:flex;align-items:center;gap:16px;margin-bottom:16px}
-    .logo{height:40px;width:auto}
+    .logo{height:46px;width:auto}
     .title{font-size:22px;font-weight:700}
     .sub{color:var(--muted);font-size:12px}
     .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px}
     .toolbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px}
     .toolbar .field{display:flex;flex-direction:column;gap:6px}
     label{font-size:12px;color:var(--muted)}
-    input,select,button{background:#0e1117;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;font-size:14px}
+    input,select,button{background:#0e1117;border:1px solid var(--border);
+      color:var(--text);padding:10px 12px;border-radius:10px;font-size:14px}
     input::placeholder{color:#6b7280}
     button{cursor:pointer}
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:#121620}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;
+      border-radius:12px;border:1px solid var(--border);background:#121620}
     .btn.primary{background:var(--brand);border-color:transparent;color:#1d1038}
     .btn.success{background:var(--accent);border-color:transparent;color:#052b1a}
     .btn.ghost{background:#0e1117}
     .tablewrap{margin-top:12px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
     table{width:100%;border-collapse:separate;border-spacing:0}
-    thead th{position:sticky;top:0;background:#0f141d;border-bottom:1px solid var(--border);text-align:left;font-size:12px;color:var(--muted);padding:10px}
+    thead th{position:sticky;top:0;background:#0f141d;border-bottom:1px solid var(--border);
+      text-align:left;font-size:12px;color:var(--muted);padding:10px}
     tbody td{padding:12px;border-bottom:1px solid var(--border);font-size:14px}
     tbody tr:hover{background:#131828}
-    .qty-badge{display:inline-block;min-width:36px;text-align:center;padding:4px 8px;border-radius:999px;background:#10161f;border:1px solid var(--border)}
+    .qty-badge{display:inline-block;min-width:36px;text-align:center;padding:4px 8px;
+      border-radius:999px;background:#10161f;border:1px solid var(--border)}
     .qty-low{background:#231416;border-color:#3a1a1a;color:#ffb3b3}
     .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid var(--border)}
     .badge.no{background:#101a13;color:#a8f0c2;border-color:#244c36}
     .badge.yes{background:#241313;color:#ffbdbd;border-color:#4a1e1e}
-    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:var(--muted);font-size:12px}
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;
+      color:var(--muted);font-size:12px}
     .pagination{display:flex;gap:8px}
     .empty{padding:28px;color:var(--muted);text-align:center}
     .status{font-size:12px;color:var(--muted)}
@@ -50,7 +57,9 @@
 <body>
   <div class="container">
     <header>
-      <img id="logo" class="logo" alt="logo" src="/logo.svg" />
+      <!-- ✅ Logo aggiornato con URL esterno -->
+      <img id="logo" class="logo" alt="TWC Logo"
+        src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
       <div>
         <div class="title">Disponibilità Ho.Re.Ca.</div>
         <div class="sub">Vista aggiornata · Solo voci non riservate di default</div>
@@ -65,15 +74,11 @@
         </div>
         <div class="field">
           <label for="produttore">Produttore</label>
-          <select id="produttore">
-            <option value="">Tutti</option>
-          </select>
+          <select id="produttore"><option value="">Tutti</option></select>
         </div>
         <div class="field">
           <label for="formato">Formato</label>
-          <select id="formato">
-            <option value="">Tutti</option>
-          </select>
+          <select id="formato"><option value="">Tutti</option></select>
         </div>
         <div class="field">
           <label for="riservato">Mostra riservati</label>
@@ -117,6 +122,8 @@
   </div>
 
   <script>
+  window.addEventListener('DOMContentLoaded', () => {
+
     const API_BASE = "https://api.thewinecaveau.com";
     const ENDPOINT  = API_BASE + '/availability';
     const PAGE_SIZE = 50;
@@ -211,21 +218,25 @@
     }
 
     async function fetchData(){
+      console.log("▶ Chiamata API:", ENDPOINT);
       rows.innerHTML = '<tr><td colspan="7" class="empty">Caricamento…</td></tr>';
       try{
         const showReserved = el('riservato').value === 'yes';
         const params = new URLSearchParams();
         if(showReserved) params.set('include_reserved','true');
-        const r = await fetch(ENDPOINT + (params.toString()? ('?'+params.toString()):''), {cache:'no-store'});
+        const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
+        const r = await fetch(url, {cache:'no-store'});
         if(!r.ok) throw new Error('HTTP '+r.status);
         data = await r.json();
         populateFilters();
         page=0; render();
       }catch(e){
+        console.error("Errore API:", e);
         rows.innerHTML = `<tr><td colspan="7" class="empty">Errore di caricamento: ${e.message}</td></tr>`;
       }
     }
 
+    // Eventi e refresh automatico
     el('q').addEventListener('input', ()=>{ page=0; render(); });
     el('produttore').addEventListener('change', ()=>{ page=0; render(); });
     el('formato').addEventListener('change', ()=>{ page=0; render(); });
@@ -244,7 +255,7 @@
       });
     });
 
-    function toCSV(rows){
+    function toCSV(){
       const header = ['produttore','etichetta','formato','box','quantità','riservato'];
       const escape = v => ('"'+String(v??'').replaceAll('"','""')+'"');
       const lines = [header.join(',')];
@@ -252,10 +263,10 @@
       for(const r of filtered){
         lines.push([r.produttore,r.etichetta,r.formato||'',r.box||'',r.quantità||0,r.riservato].map(escape).join(','));
       }
-      return lines.join('
-');
+      return lines.join('\n');
     }
-    document.getElementById('export').addEventListener('click',()=>{
+
+    el('export').addEventListener('click',()=>{
       const csv = toCSV(data);
       const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
       const a = document.createElement('a');
@@ -266,6 +277,7 @@
 
     setInterval(fetchData, AUTO_REFRESH_MS);
     fetchData();
+  });
   </script>
 </body>
 </html>
