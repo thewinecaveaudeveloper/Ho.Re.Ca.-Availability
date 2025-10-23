@@ -3,310 +3,266 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TWC | Disponibilità Ho.Re.Ca.</title>
+  <title>TWC HORECA – Disponibilità</title>
+  <link rel="preconnect" href="https://api.thewinecaveau.com" crossorigin>
   <style>
-    :root{ --bg:#0f1115; --panel:#171a21; --muted:#8b95a7; --text:#e6eaf2;
-      --brand:#b48bff; --accent:#5be49b; --danger:#ff6b6b; --border:#252a34; }
-    *{box-sizing:border-box}
-    html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
-      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    a{color:var(--brand)}
-    .container{max-width:1200px;margin:0 auto;padding:24px}
-    header{display:flex;align-items:center;gap:16px;margin-bottom:16px}
-    .logo{height:160px;width:auto}
-    .title{font-size:24px;font-weight:700}
-    .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px}
-    .toolbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
-    .toolbar .field{display:flex;flex-direction:column;gap:6px}
-    label{font-size:12px;color:var(--muted)}
-    input,select{background:#0e1117;border:1px solid var(--border);
-      color:var(--text);padding:10px 12px;border-radius:10px;font-size:14px}
-    input::placeholder{color:#6b7280}
-    .tablewrap{margin-top:12px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
-    table{width:100%;border-collapse:separate;border-spacing:0}
-    thead th{position:sticky;top:0;background:#0f141d;border-bottom:1px solid var(--border);
-      text-align:left;font-size:12px;color:var(--muted);padding:10px}
-    tbody td{padding:12px;border-bottom:1px solid var(--border);font-size:14px}
-    tbody tr:hover{background:#131828}
-    .qty-badge{display:inline-block;min-width:36px;text-align:center;padding:4px 8px;
-      border-radius:999px;background:#10161f;border:1px solid var(--border)}
-    .qty-low{background:#231416;border-color:#3a1a1a;color:#ffb3b3}
-    .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid var(--border)}
-    .badge.no{background:#101a13;color:#a8f0c2;border-color:#244c36}
-    .badge.yes{background:#241313;color:#ffbdbd;border-color:#4a1e1e}
-    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;
-      color:var(--muted);font-size:12px}
-    .pagination{display:flex;gap:8px}
-    .empty{padding:28px;color:var(--muted);text-align:center}
-    .status{font-size:12px;color:var(--muted)}
-    @media (max-width:900px){
-      .toolbar{grid-template-columns:1fr 1fr}
-      .hide-sm{display:none}
+    :root {
+      --bg: #0a0a0a;
+      --card: #111;
+      --muted: #999;
+      --text: #f5f5f5;
+      --accent: #8a2be2;
+      --accent-2: #b889f8;
+      --row-pad-y: 6px; /* <— righe più basse */
+      --row-pad-x: 10px;
+      --radius: 14px;
+    }
+    html, body { background:#0a0a0a; color:var(--text); margin:0; font: 15px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; }
+    .container{ max-width:1100px; margin:20px auto 80px; padding:0 16px; }
+    header{ display:flex; align-items:center; gap:16px; margin:10px 0 12px; }
+    header img{ width:40px; height:40px; object-fit:contain; }
+    h1{ font-size: clamp(22px, 3.2vw, 32px); margin:0; letter-spacing:.3px; }
+
+    /* Banner contatti */
+    .contact-bar{
+      display:flex; flex-wrap:wrap; gap:18px; align-items:center;
+      background: linear-gradient( to right, rgba(138,43,226,.15), rgba(138,43,226,.05));
+      border:1px solid rgba(138,43,226,.35);
+      padding:10px 14px; border-radius: var(--radius);
+      margin:10px 0 18px;
+    }
+    .contact-item{ display:flex; align-items:center; gap:8px; color:var(--text); text-decoration:none; }
+    .contact-item svg{ width:16px; height:16px; opacity:.85; }
+    .contact-item:hover{ text-decoration:underline; }
+
+    .card{ background:var(--card); border:1px solid #1b1b1b; border-radius:var(--radius); padding:14px; }
+    .controls{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
+    .controls input, .controls select{ background:#0f0f0f; color:var(--text); border:1px solid #262626; border-radius:10px; padding:8px 10px; }
+
+    table{ width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:12px; }
+    thead th{ position:sticky; top:0; background:#151515; z-index:1; text-align:left; font-weight:600; color:#ddd; padding: 10px var(--row-pad-x); border-bottom:1px solid #202020; }
+    tbody td{ padding: var(--row-pad-y) var(--row-pad-x); border-bottom:1px dashed #1f1f1f; vertical-align:middle; }
+    tbody tr:hover{ background:#141414; }
+    .qty-low{ color:#ffb4b4; font-weight:600; }
+
+    /* Pagination moderna con slider */
+    .pagination{ display:flex; align-items:center; gap:12px; justify-content:space-between; margin-top:14px; flex-wrap:wrap; }
+    .pager-left, .pager-right{ display:flex; align-items:center; gap:8px; }
+    .btn{ appearance:none; border:1px solid #2a2a2a; background:#121212; color:#fff; padding:8px 12px; border-radius:10px; cursor:pointer; }
+    .btn[disabled]{ opacity:.5; cursor:not-allowed; }
+    .range-wrap{ display:flex; align-items:center; gap:10px; min-width:260px; }
+    input[type="range"]{ width:220px; accent-color: var(--accent); }
+    .page-chip{ background:#171717; border:1px solid #2a2a2a; padding:6px 10px; border-radius:999px; font-size:13px; color:#ddd; }
+
+    footer{ margin:40px auto 0; color:#cfcfcf; }
+    footer .foot-card{ background:#111; border:1px solid #1b1b1b; border-radius:12px; padding:16px; white-space:pre-line; font-size:13px; line-height:1.5; color:#cfcfcf; }
+    .muted{ color:#a8a8a8; }
+
+    @media (max-width:640px){
+      .contact-bar{ gap:12px; }
+      thead{ display:none; }
+      tbody td{ display:block; padding:10px 12px; }
+      tbody tr{ border:1px solid #1f1f1f; border-radius:10px; margin-bottom:10px; display:block; }
+      tbody td[data-th]::before{ content: attr(data-th) ": "; color:#a0a0a0; font-weight:500; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <img id="logo" class="logo" alt="TWC Logo"
-        src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
-      <div><div class="title">Disponibilità Ho.Re.Ca.</div></div>
+      <img alt="TWC" src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
+      <h1>HORECA – Disponibilità</h1>
     </header>
 
-    <section class="panel">
-      <div class="toolbar">
-        <div class="field">
-          <label for="q">Cerca (produttore / etichetta)</label>
-          <input id="q" placeholder="Es. Dom Pérignon, Sassicaia, Barbaresco…" />
-        </div>
-        <div class="field">
-          <label for="produttore">Produttore</label>
-          <select id="produttore"><option value="">Tutti</option></select>
-        </div>
-        <div class="field">
-          <label for="formato">Formato</label>
-          <select id="formato"><option value="">Tutti</option></select>
-        </div>
-        <div class="field">
-          <label for="riservato">Mostra riservati</label>
-          <select id="riservato">
-            <option value="no" selected>No</option>
-            <option value="yes">Sì</option>
+    <!-- Banner contatti sotto al titolo -->
+    <div class="contact-bar" role="contentinfo" aria-label="Contatti">
+      <a class="contact-item" href="tel:+393917011180" title="Chiama +39 391 701 1180">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.5 15.5 0 006.6 6.6l2.2-2.2a1 1 0 011.1-.2c1.2.5 2.6.8 4 .8a1 1 0 011 1V21a1 1 0 01-1 1C11.2 22 2 12.8 2 2a1 1 0 011-1h4.2a1 1 0 011 1c0 1.4.3 2.8.8 4a1 1 0 01-.2 1.1L6.6 10.8z"/></svg>
+        <span>+39 391 701 1180</span>
+      </a>
+      <a class="contact-item" href="mailto:info@thewinecaveau.com" title="Scrivi a info@thewinecaveau.com">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4.2l-8 5-8-5V6l8 5 8-5v2.2z"/></svg>
+        <span>info@thewinecaveau.com</span>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="controls">
+        <input id="search" type="search" placeholder="Cerca produttore / etichetta / formato…" aria-label="Cerca" />
+        <select id="riservato">
+          <option value="">Tutti</option>
+          <option value="NO">Non riservato</option>
+          <option value="YES">Riservato</option>
+        </select>
+        <label class="muted">Per pagina
+          <select id="pageSize">
+            <option>10</option>
+            <option selected>20</option>
+            <option>50</option>
+            <option>100</option>
           </select>
-        </div>
+        </label>
       </div>
 
-      <div class="tablewrap">
-        <table>
+      <div class="table-wrap">
+        <table id="tbl">
           <thead>
             <tr>
-              <th></th>
-              <th data-sort="produttore">Produttore</th>
-              <th data-sort="etichetta">Etichetta</th>
-              <th data-sort="formato" class="hide-sm">Formato</th>
-              <th data-sort="box" class="hide-sm">Box</th>
-              <th data-sort="quantità">Quantità</th>
+              <th>Produttore</th>
+              <th>Etichetta</th>
+              <th>Formato</th>
+              <th>Quantità</th>
+              <th>Box</th>
               <th>Riservato</th>
             </tr>
           </thead>
-          <tbody id="rows">
-            <tr><td colspan="7" class="empty">Caricamento…</td></tr>
-          </tbody>
+          <tbody id="tbody"></tbody>
         </table>
       </div>
-      <div class="footer">
-        <div class="status" id="status">—</div>
-        <div class="pagination">
-          <button class="btn" id="prev">‹ Precedente</button>
-          <button class="btn" id="next">Successivo ›</button>
+
+      <div class="pagination" id="pagination" aria-label="Navigazione pagine">
+        <div class="pager-left">
+          <button class="btn" id="firstBtn" aria-label="Prima pagina">« Prima</button>
+          <button class="btn" id="prevBtn" aria-label="Pagina precedente">‹ Precedente</button>
+        </div>
+        <div class="range-wrap">
+          <span class="page-chip" id="pageInfo">Pagina 1 / 1</span>
+          <input type="range" id="pageSlider" min="1" max="1" step="1" value="1" aria-label="Selettore pagina" />
+        </div>
+        <div class="pager-right">
+          <button class="btn" id="nextBtn" aria-label="Pagina successiva">Successivo ›</button>
+          <button class="btn" id="lastBtn" aria-label="Ultima pagina">Ultima »</button>
         </div>
       </div>
-    </section>
+    </div>
+
+    <footer class="container">
+      <div class="foot-card">
+© 2025 TWC S.R.L.
+P.I. 07388060480
+TWC S.R.L. via parrocchia 7 - 25020 FLERO (BS)
+
+Questo sito non fa parte del sito Facebook o Facebook Inc. Inoltre, questo sito NON è approvato da Facebook in alcun modo. FACEBOOK è un marchio registrato di FACEBOOK, Inc.
+
+*This Website is not a part of Facebook or Facebook Inc. Additionally, this site is NOT endorsed by Facebook in any way. FACEBOOK is a trademark of FACEBOOK Inc.
+      </div>
+    </footer>
   </div>
 
   <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const API_BASE = "https://api.thewinecaveau.com";
-    const ENDPOINT  = API_BASE + '/availability';
-    const PAGE_SIZE = 50;
-    const LOW_STOCK_THRESHOLD = 6;
-    const AUTO_REFRESH_MS = 30000;
+    const API = 'https://api.thewinecaveau.com/availability';
 
-    let data = [];
-    let page = 0;
-    let sort = { by: 'produttore', dir: 'asc' };
+    const qs = (s, root=document) => root.querySelector(s);
+    const qsa = (s, root=document) => [...root.querySelectorAll(s)];
 
-    const el = (id)=>document.getElementById(id);
-    const rows = el('rows');
-    const status = el('status');
+    const tbody = qs('#tbody');
+    const search = qs('#search');
+    const ddlRis = qs('#riservato');
+    const pageSizeSel = qs('#pageSize');
+    const pageInfo = qs('#pageInfo');
+    const slider = qs('#pageSlider');
+    const firstBtn = qs('#firstBtn');
+    const prevBtn = qs('#prevBtn');
+    const nextBtn = qs('#nextBtn');
+    const lastBtn = qs('#lastBtn');
 
-    function fmtInt(n){ return Intl.NumberFormat('it-IT').format(n); }
+    let all = [];
+    let filtered = [];
+    let currentPage = 1;
+    let pageSize = parseInt(pageSizeSel.value, 10) || 20;
 
-    /* ===== Helpers quantità ===== */
-    function normalizeQty(raw) {
-      const s = (raw ?? "").toString().trim();
-      if (!s) return "";
-      if (/^su\s*richiesta$/i.test(s)) return "Su richiesta";
-      if (/^(nan|null|none)$/i.test(s)) return "Su richiesta";
-      return s;
-    }
-    function qtyNumber(raw) {
-      const s = normalizeQty(raw);
-      const n = Number(s.replace(",", "."));
-      return Number.isFinite(n) ? n : null;
-    }
-    function formatQuantita(raw) {
-      const s = normalizeQty(raw);
-      if (!s) return "—";
-      const n = Number(s.replace(",", "."));
-      return Number.isFinite(n) ? String(n) : s;
+    const lowQty = (q) => typeof q === 'number' && q <= 6;
+
+    function toCell(text, th){
+      const td = document.createElement('td');
+      td.textContent = text ?? '';
+      td.setAttribute('data-th', th || '');
+      return td;
     }
 
-    /* ===== Filtri, sort, paging ===== */
-    function applyFilters(src){
-      const q = el('q').value.trim().toLowerCase();
-      const p = el('produttore').value;
-      const f = el('formato').value;
-      const showReserved = el('riservato').value === 'yes';
-      return src.filter(r=>{
-        if(!showReserved && r.riservato === 'YES') return false;
-        if(p && r.produttore !== p) return false;
-        if(f && r.formato !== f) return false;
-        if(q){
-          const hay = (r.produttore + ' ' + r.etichetta).toLowerCase();
-          if(!hay.includes(q)) return false;
-        }
-        return true;
-      });
-    }
-
-    function sortData(arr){
-      const {by,dir} = sort;
-      const s = [...arr].sort((a,b)=>{
-        if (by === 'quantità') {
-          const na = qtyNumber(a["quantità"] ?? a.quantita);
-          const nb = qtyNumber(b["quantità"] ?? b.quantita);
-          if (na === null && nb === null) {
-            const sa = normalizeQty(a["quantità"] ?? a.quantita).toLowerCase();
-            const sb = normalizeQty(b["quantità"] ?? b.quantita).toLowerCase();
-            if (sa<sb) return -1; if (sa>sb) return 1; return 0;
-          }
-          if (na === null) return 1;
-          if (nb === null) return -1;
-          return na - nb;
-        }
-        const va = (a[by] ?? '').toString().toLowerCase();
-        const vb = (b[by] ?? '').toString().toLowerCase();
-        if(va<vb) return -1; if(va>vb) return 1; return 0;
-      });
-      return dir==='asc'? s : s.reverse();
-    }
-
-    function paginate(arr){
-      const start = page*PAGE_SIZE;
-      return arr.slice(start, start+PAGE_SIZE);
-    }
-
-    function render(){
-      const filtered = applyFilters(data);
-      const sorted   = sortData(filtered);
-      const pageData = paginate(sorted);
-      rows.innerHTML = '';
-      if(pageData.length===0){
-        rows.innerHTML = '<tr><td colspan="7" class="empty">Nessun risultato</td></tr>';
-      } else {
-        for(const r of pageData){
-          const qRaw = r["quantità"] ?? r.quantita;
-          const qNum = qtyNumber(qRaw);
-          const qTxt = formatQuantita(qRaw);
-          const low = qNum !== null && qNum <= LOW_STOCK_THRESHOLD;
-
-          rows.insertAdjacentHTML('beforeend', `
-            <tr>
-              <td></td>
-              <td>${r.produttore}</td>
-              <td>${r.etichetta}</td>
-              <td class="hide-sm">${r.formato ?? ''}</td>
-              <td class="hide-sm">${r.box ?? ''}</td>
-              <td><span class="qty-badge ${low?'qty-low':''}">${qTxt}</span></td>
-              <td>
-                ${r.riservato==='YES' ? '<span class="badge yes">YES</span>' : '<span class="badge no">NO</span>'}
-              </td>
-            </tr>
-          `);
-        }
+    function renderTable(){
+      tbody.innerHTML = '';
+      const start = (currentPage - 1) * pageSize;
+      const page = filtered.slice(start, start + pageSize);
+      for(const r of page){
+        const tr = document.createElement('tr');
+        tr.appendChild(toCell(r.produttore, 'Produttore'));
+        tr.appendChild(toCell(r.etichetta, 'Etichetta'));
+        tr.appendChild(toCell(r.formato, 'Formato'));
+        const qty = toCell(r.quantità, 'Quantità');
+        if(lowQty(r.quantità)) qty.classList.add('qty-low');
+        tr.appendChild(qty);
+        tr.appendChild(toCell(r.box, 'Box'));
+        tr.appendChild(toCell(r.riservato, 'Riservato'));
+        tbody.appendChild(tr);
       }
-      const total = filtered.length;
-      const from = Math.min(page*PAGE_SIZE+1, total);
-      const to = Math.min((page+1)*PAGE_SIZE, total);
-      status.textContent = total ? `${from}–${to} di ${fmtInt(total)} risultati` : '0 risultati';
+      updatePager();
     }
 
-    function unique(list, key){
-      const set = new Set(list.map(x=>x[key]).filter(Boolean));
-      return Array.from(set).sort();
+    function updatePager(){
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      if(currentPage > totalPages) currentPage = totalPages;
+      pageInfo.textContent = `Pagina ${currentPage} / ${totalPages}`;
+      slider.max = String(totalPages);
+      slider.value = String(currentPage);
+      prevBtn.disabled = currentPage <= 1;
+      firstBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+      lastBtn.disabled = currentPage >= totalPages;
     }
 
-    function populateFilters(){
-      const ps = unique(data, 'produttore');
-      const fs = unique(data, 'formato');
-      el('produttore').innerHTML = '<option value="">Tutti</option>' + ps.map(x=>`<option>${x}</option>`).join('');
-      el('formato').innerHTML = '<option value="">Tutti</option>' + fs.map(x=>`<option>${x}</option>`).join('');
+    function applyFilters(){
+      const q = (search.value || '').toLowerCase();
+      const ris = ddlRis.value;
+      filtered = all.filter(r => {
+        const blob = `${r.produttore} ${r.etichetta} ${r.formato}`.toLowerCase();
+        const risOk = ris ? r.riservato === ris : true;
+        return blob.includes(q) && risOk;
+      });
+      currentPage = 1;
+      renderTable();
     }
 
-    /* ===== API ===== */
-    function keyOf(r){
-      // chiave stabile per matching tra dataset (non cambia con refresh)
-      return [r.produttore, r.etichetta, r.formato].join('||');
-    }
+    //— Eventi pagination (fix “Successivo” che non avanzava)
+    firstBtn.addEventListener('click', () => { currentPage = 1; renderTable(); });
+    prevBtn.addEventListener('click', () => { if(currentPage > 1){ currentPage--; renderTable(); }});
+    nextBtn.addEventListener('click', () => {
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      if(currentPage < totalPages){ currentPage++; renderTable(); }
+    });
+    lastBtn.addEventListener('click', () => {
+      currentPage = Math.max(1, Math.ceil(filtered.length / pageSize));
+      renderTable();
+    });
+    slider.addEventListener('input', () => { currentPage = parseInt(slider.value, 10) || 1; renderTable(); });
 
-    async function initialLoad(){
-      rows.innerHTML = '<tr><td colspan="7" class="empty">Caricamento…</td></tr>';
-      const showReserved = el('riservato').value === 'yes';
-      const params = new URLSearchParams();
-      if(showReserved) params.set('include_reserved','true');
-      const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
-      const r = await fetch(url, {cache:'no-store'});
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      data = await r.json();
-      populateFilters();           // solo al primo load
-      render();                    // non azzero page
-    }
+    search.addEventListener('input', applyFilters);
+    ddlRis.addEventListener('change', applyFilters);
+    pageSizeSel.addEventListener('change', () => { pageSize = parseInt(pageSizeSel.value, 10) || 20; currentPage = 1; renderTable(); });
 
-    async function updateQuantities(){
+    async function load(){
       try{
-        const showReserved = el('riservato').value === 'yes';
-        const params = new URLSearchParams();
-        if(showReserved) params.set('include_reserved','true');
-        const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
-        const r = await fetch(url, {cache:'no-store'});
-        if(!r.ok) throw new Error('HTTP '+r.status);
-        const latest = await r.json();
-
-        // mappa quantità (e solo quella) dagli ultimi dati
-        const map = new Map(latest.map(x => [keyOf(x), x["quantità"] ?? x.quantita]));
-        let changed = false;
-
-        for(const row of data){
-          const k = keyOf(row);
-          if(map.has(k)){
-            const newQ = map.get(k);
-            const oldQ = row["quantità"] ?? row.quantita;
-            if(String(newQ) !== String(oldQ)){
-              // aggiorna solo la quantità
-              if ("quantità" in row) row["quantità"] = newQ; else row.quantita = newQ;
-              changed = true;
-            }
-          }
-        }
-        if(changed) render();  // non tocco filtri/pagina
-      }catch(e){
-        console.warn("Auto-refresh fallito:", e.message);
+        const res = await fetch(API, { cache: 'no-store' });
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        // normalizza chiavi (quantità può arrivare come "quantita")
+        all = data.map(r => ({
+          produttore: r.produttore ?? r.Produttore ?? '',
+          etichetta: r.etichetta ?? r.Etichetta ?? '',
+          formato: r.formato ?? r.Formato ?? '',
+          quantità: Number(r.quantità ?? r.quantita ?? r.Quantità ?? r.Quantita ?? 0),
+          box: r.box ?? r.Box ?? '',
+          riservato: r.riservato ?? r.Riservato ?? ''
+        }));
+        filtered = all.slice();
+        renderTable();
+      }catch(err){
+        console.error('Errore caricamento', err);
+        tbody.innerHTML = `<tr><td colspan="6">Errore nel caricamento dati. Riprova più tardi.</td></tr>`;
       }
     }
 
-    // Eventi UI
-    el('q').addEventListener('input', ()=>{ page=0; render(); });
-    el('produttore').addEventListener('change', ()=>{ page=0; render(); });
-    el('formato').addEventListener('change', ()=>{ page=0; render(); });
-    el('riservato').addEventListener('change', ()=>{ initialLoad(); }); // ricarica completo per coerenza dataset
-    document.querySelectorAll('th[data-sort]').forEach(th=>{
-      th.style.cursor='pointer';
-      th.addEventListener('click',()=>{
-        const by = th.getAttribute('data-sort');
-        if(sort.by===by){ sort.dir = (sort.dir==='asc'?'desc':'asc'); }
-        else { sort.by=by; sort.dir='asc'; }
-        render();
-      });
-    });
-
-    // boot
-    initialLoad().catch(e=>{
-      rows.innerHTML = `<tr><td colspan="7" class="empty">Errore di caricamento: ${e.message}</td></tr>`;
-    });
-    setInterval(updateQuantities, AUTO_REFRESH_MS);
-  });
+    load();
   </script>
 </body>
 </html>
-
