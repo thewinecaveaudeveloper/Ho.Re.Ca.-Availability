@@ -40,18 +40,18 @@
     label{font-size:12px;color:var(--muted)}
     input,select{
       background:#0e1117;border:1px solid var(--border);color:var(--text);
-      padding:12px 12px;border-radius:10px;font-size:15px;min-height:44px
+      padding:12px;border-radius:10px;font-size:15px;min-height:44px
     }
     input::placeholder{color:#6b7280}
 
     /* Tabella desktop */
     .tablewrap{margin-top:12px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
-    table{width:100%;border-collapse:separate;border-spacing:0}
+    table{width:100%;border-collapse:collapse}
+    th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border)}
     thead th{
-      position:sticky;top:0;background:#0f141d;border-bottom:1px solid var(--border);
-      text-align:left;font-size:12px;color:var(--muted);padding:10px
+      position:sticky;top:0;background:#0f141d;font-size:12px;color:var(--muted);
+      font-weight:600;letter-spacing:.3px
     }
-    tbody td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:14px;line-height:1.25}
     tbody tr:hover{background:#131828}
     .qty-badge{display:inline-block;min-width:32px;text-align:center;padding:3px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--border);font-size:13px}
     .qty-low{background:#231416;border-color:#3a1a1a;color:#ffb3b3}
@@ -60,13 +60,12 @@
     .badge.yes{background:#241313;color:#ffbdbd;border-color:#4a1e1e}
     .empty{padding:28px;color:var(--muted);text-align:center}
 
-    /* Modalità "schede" su mobile */
+    /* Mobile cards */
     @media (max-width:640px){
       thead{display:none}
       table, tbody, tr, td{display:block;width:100%}
       tbody tr{border-bottom:1px solid var(--border);padding:10px 10px}
-      tbody tr:hover{background:transparent}
-      tbody td{border:0;padding:4px 0}
+      tbody td{border:0;padding:5px 0}
       tbody td[data-th]{display:flex;justify-content:space-between;gap:10px}
       tbody td[data-th]::before{
         content:attr(data-th);
@@ -75,7 +74,7 @@
       .qty-badge{min-width:46px}
     }
 
-    /* Footer tabella (status + paginator) */
+    /* Footer table */
     .tablefooter{
       display:flex;justify-content:space-between;align-items:center;margin-top:12px;
       color:var(--muted);font-size:12px;gap:12px;flex-wrap:wrap
@@ -92,44 +91,35 @@
     .pager.disabled{opacity:.45;cursor:not-allowed}
     .dots{color:var(--muted);padding:0 4px}
 
-    /* Site footer (legale) */
+    /* Site footer */
     .site-footer{
       margin:18px auto 0 auto;max-width:1200px;padding:16px clamp(12px,4vw,24px);
       color:#cbd5e1;font-size:12px;line-height:1.4;border-top:1px solid var(--border)
     }
     .site-footer small{display:block;color:var(--muted)}
     .site-footer .cols{display:grid;grid-template-columns:1fr;gap:8px}
-
-    /* Micro-tuning */
-    @media (max-width:880px){
-      .logo{height:90px}
-      .contact-sep{display:none}
-    }
-    @media (prefers-reduced-motion:reduce){
-      *{scroll-behavior:auto}
-    }
+    @media (max-width:880px){ .logo{height:90px} .contact-sep{display:none} }
   </style>
 </head>
 <body>
-  <div class="container" style="padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom));">
+  <div class="container">
     <header>
-      <img id="logo" class="logo" alt="TWC Logo" loading="lazy"
+      <img id="logo" class="logo" alt="TWC Logo"
         src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
       <div><div class="title">Disponibilità Ho.Re.Ca.</div></div>
     </header>
 
-    <!-- Banner contatti -->
-    <nav class="contactbar" aria-label="Contatti TWC">
+    <div class="contactbar" aria-label="Contatti TWC">
       <div class="contact-item">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.56.57 1 1 0 011 1V20a1 1 0 01-1 1C10.4 21 3 13.6 3 4a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 00.57 3.56 1 1 0 01-.24 1.01l-2.21 2.22z"/></svg>
-        <a href="tel:+393917011180" aria-label="Chiama +39 391 701 1180">+39 391 701 1180</a>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.56.57 1 1 0 011 1V20a1 1 0 01-1 1C10.4 21 3 13.6 3 4a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 00.57 3.56 1 1 0 01-.24 1.01l-2.21 2.22z"/></svg>
+        <a href="tel:+393917011180">+39 391 701 1180</a>
       </div>
       <div class="contact-sep"></div>
       <div class="contact-item">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4a2 2 0 00-2 2v.4l10 6.25L22 6.4V6a2 2 0 00-2-2zm0 4.47l-8 5-8-5V18a2 2 0 002 2h12a2 2 0 002-2V8.47z"/></svg>
-        <a href="mailto:info@thewinecaveau.com" aria-label="Scrivi a info@thewinecaveau.com">info@thewinecaveau.com</a>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v.4l10 6.25L22 6.4V6a2 2 0 00-2-2zm0 4.47l-8 5-8-5V18a2 2 0 002 2h12a2 2 0 002-2V8.47z"/></svg>
+        <a href="mailto:info@thewinecaveau.com">info@thewinecaveau.com</a>
       </div>
-    </nav>
+    </div>
 
     <section class="panel">
       <div class="toolbar">
@@ -139,15 +129,15 @@
         </div>
         <div class="field">
           <label for="produttore">Produttore</label>
-          <select id="produttore" aria-label="Filtra per produttore"><option value="">Tutti</option></select>
+          <select id="produttore"><option value="">Tutti</option></select>
         </div>
         <div class="field">
           <label for="formato">Formato</label>
-          <select id="formato" aria-label="Filtra per formato"><option value="">Tutti</option></select>
+          <select id="formato"><option value="">Tutti</option></select>
         </div>
         <div class="field">
           <label for="riservato">Mostra riservati</label>
-          <select id="riservato" aria-label="Mostra prodotti riservati">
+          <select id="riservato">
             <option value="no" selected>No</option>
             <option value="yes">Sì</option>
           </select>
@@ -162,26 +152,24 @@
               <th data-sort="produttore">Produttore</th>
               <th data-sort="etichetta">Etichetta</th>
               <th data-sort="formato" class="hide-sm">Formato</th>
-              <th data-sort="box" class="hide-sm">Box</th>
               <th data-sort="quantità">Quantità</th>
               <th>Riservato</th>
             </tr>
           </thead>
           <tbody id="rows">
-            <tr><td colspan="7" class="empty">Caricamento…</td></tr>
+            <tr><td colspan="6" class="empty">Caricamento…</td></tr>
           </tbody>
         </table>
       </div>
 
       <div class="tablefooter">
         <div class="status" id="status">—</div>
-        <div class="pagination" id="pagination" aria-label="Paginazione"></div>
+        <div class="pagination" id="pagination"></div>
       </div>
     </section>
   </div>
 
-  <!-- Footer legale del sito -->
-  <footer class="site-footer" role="contentinfo">
+  <footer class="site-footer">
     <div class="cols">
       <div>© 2025 TWC S.R.L. — P.I. 07388060480</div>
       <div>TWC S.R.L. — via Parrocchia 7, 25020 FLERO (BS)</div>
@@ -202,277 +190,86 @@
     const ENDPOINT = API_BASE + "/availability";
     const LOW_STOCK_THRESHOLD = 6;
     const AUTO_REFRESH_MS = 30000;
-
-    // PAGE SIZE dinamico (mobile/desktop)
     const pageSize = ()=> (matchMedia("(max-width:640px)").matches ? 20 : 50);
-
-    let data = [];
-    let page = 0;
-    let sort = { by: "produttore", dir: "asc" };
-
-    const $ = (id)=>document.getElementById(id);
-    let rows, pagination;
-
-    const labels = {
-      produttore: "Produttore",
-      etichetta: "Etichetta",
-      formato: "Formato",
-      box: "Box",
-      quantita: "Quantità",
-      riservato: "Riservato"
-    };
+    let data = [], page = 0, sort = { by:"produttore", dir:"asc" };
+    const $ = id=>document.getElementById(id);
+    let rows;
 
     function fmtInt(n){ return Intl.NumberFormat("it-IT").format(n); }
+    function normalizeQty(raw){ const s=(raw??"").toString().trim(); if(!s) return ""; if(/^su\s*richiesta$/i.test(s)) return "Su richiesta"; if(/^(nan|null|none)$/i.test(s)) return "Su richiesta"; return s; }
+    function qtyNumber(raw){ const s=normalizeQty(raw); const n=Number(s.replace(",",".")); return Number.isFinite(n)?n:null; }
+    function formatQuantita(raw){ const s=normalizeQty(raw); if(!s) return "—"; const n=Number(s.replace(",",".")); return Number.isFinite(n)?String(n):s; }
 
-    // ===== Helpers quantità =====
-    function normalizeQty(raw) {
-      const s = (raw ?? "").toString().trim();
-      if (!s) return "";
-      if (/^su\s*richiesta$/i.test(s)) return "Su richiesta";
-      if (/^(nan|null|none)$/i.test(s)) return "Su richiesta";
-      return s;
-    }
-    function qtyNumber(raw) {
-      const s = normalizeQty(raw);
-      const n = Number(s.replace(",", "."));
-      return Number.isFinite(n) ? n : null;
-    }
-    function formatQuantita(raw) {
-      const s = normalizeQty(raw);
-      if (!s) return "—";
-      const n = Number(s.replace(",", "."));
-      return Number.isFinite(n) ? String(n) : s;
-    }
-
-    // ===== Filtri, sort, paging =====
     function applyFilters(src){
-      const q = $("q").value.trim().toLowerCase();
-      const p = $("produttore").value;
-      const f = $("formato").value;
-      const showReserved = $("riservato").value === "yes";
+      const q=$("q").value.trim().toLowerCase();
+      const p=$("produttore").value;
+      const f=$("formato").value;
+      const show=$("riservato").value==="yes";
       return src.filter(r=>{
-        if(!showReserved && r.riservato === "YES") return false;
-        if(p && r.produttore !== p) return false;
-        if(f && r.formato !== f) return false;
-        if(q){
-          const hay = (r.produttore + " " + r.etichetta).toLowerCase();
-          if(!hay.includes(q)) return false;
-        }
+        if(!show && r.riservato==="YES") return false;
+        if(p && r.produttore!==p) return false;
+        if(f && r.formato!==f) return false;
+        if(q && !(r.produttore+" "+r.etichetta).toLowerCase().includes(q)) return false;
         return true;
       });
     }
 
     function sortData(arr){
-      const {by,dir} = sort;
-      const s = [...arr].sort((a,b)=>{
-        if (by === "quantità") {
-          const na = qtyNumber(a["quantità"] ?? a.quantita);
-          const nb = qtyNumber(b["quantità"] ?? b.quantita);
-          if (na === null && nb === null) {
-            const sa = normalizeQty(a["quantità"] ?? a.quantita).toLowerCase();
-            const sb = normalizeQty(b["quantità"] ?? b.quantita).toLowerCase();
-            if (sa<sb) return -1; if (sa>sb) return 1; return 0;
-          }
-          if (na === null) return 1;
-          if (nb === null) return -1;
-          return na - nb;
+      const {by,dir}=sort;
+      const s=[...arr].sort((a,b)=>{
+        if(by==="quantità"){
+          const na=qtyNumber(a["quantità"]??a.quantita), nb=qtyNumber(b["quantità"]??b.quantita);
+          if(na===null&&nb===null) return 0;
+          if(na===null) return 1; if(nb===null) return -1;
+          return na-nb;
         }
-        const va = (a[by] ?? "").toString().toLowerCase();
-        const vb = (b[by] ?? "").toString().toLowerCase();
-        if(va<vb) return -1; if(va>vb) return 1; return 0;
+        const va=(a[by]??"").toString().toLowerCase(), vb=(b[by]??"").toString().toLowerCase();
+        if(va<vb)return-1;if(va>vb)return 1;return 0;
       });
-      return dir==="asc"? s : s.reverse();
+      return dir==="asc"?s:s.reverse();
     }
 
-    function buildPagination(total, current){
-      const totalPages = Math.max(1, Math.ceil(total / pageSize()));
-      const btn = (label, target, disabled=false, active=false) =>
-        `<button class="pager ${disabled?'disabled':''} ${active?'active':''}" data-page="${target}" ${disabled?'disabled':''}>${label}</button>`;
-
-      let html = '';
-      html += btn('‹', current - 1, current <= 0);
-
-      const maxButtons = 7;
-      const lastIndex = totalPages - 1;
-      let start = Math.max(0, current - 3);
-      let end   = Math.min(totalPages, start + maxButtons);
-      if (end - start < maxButtons) start = Math.max(0, end - maxButtons);
-
-      if (start > 0){
-        html += btn('1', 0, false, current===0);
-        if (start > 1) html += '<span class="dots">…</span>';
-      }
-      for (let i = start; i < end; i++){
-        html += btn(String(i+1), i, false, current===i);
-      }
-      if (end < totalPages){
-        if (end < totalPages - 1) html += '<span class="dots">…</span>';
-        html += btn(String(totalPages), lastIndex, false, current===lastIndex);
-      }
-      html += btn('›', current + 1, current >= lastIndex);
-      $("pagination").innerHTML = html;
-    }
-
-    function paginate(arr){
-      const start = page * pageSize();
-      return arr.slice(start, start + pageSize());
-    }
-
-    function clampPage(total){
-      const totalPages = Math.max(1, Math.ceil(total / pageSize()));
-      if (page >= totalPages) page = totalPages - 1;
-      if (page < 0) page = 0;
+    function buildPagination(total,current){
+      const totalPages=Math.max(1,Math.ceil(total/pageSize()));
+      const btn=(label,target,disabled=false,active=false)=>`<button class="pager ${disabled?'disabled':''} ${active?'active':''}" data-page="${target}" ${disabled?'disabled':''}>${label}</button>`;
+      let html=btn("‹",current-1,current<=0);
+      const last=totalPages-1,maxButtons=7;let start=Math.max(0,current-3),end=Math.min(totalPages,start+maxButtons);
+      if(end-start<maxButtons)start=Math.max(0,end-maxButtons);
+      if(start>0){html+=btn("1",0,false,current===0);if(start>1)html+='<span class="dots">…</span>';}
+      for(let i=start;i<end;i++)html+=btn(String(i+1),i,false,current===i);
+      if(end<totalPages){if(end<totalPages-1)html+='<span class="dots">…</span>';html+=btn(String(totalPages),last,false,current===last);}
+      html+=btn("›",current+1,current>=last);
+      $("pagination").innerHTML=html;
     }
 
     function render(){
-      const filtered = applyFilters(data);
-      const sorted   = sortData(filtered);
-      clampPage(sorted.length);
-      const pageData = paginate(sorted);
-
-      rows.innerHTML = '';
-      if(pageData.length===0){
-        rows.innerHTML = '<tr><td colspan="7" class="empty">Nessun risultato</td></tr>';
-      } else {
-        for(const r of pageData){
-          const qRaw = r["quantità"] ?? r.quantita;
-          const qNum = qtyNumber(qRaw);
-          const qTxt = formatQuantita(qRaw);
-          const low = qNum !== null && qNum <= LOW_STOCK_THRESHOLD;
-
-          // data-th per vista mobile a schede
-          rows.insertAdjacentHTML('beforeend', `
-            <tr>
-              <td aria-hidden="true" style="display:none"></td>
-              <td data-th="${labels.produttore}">${r.produttore}</td>
-              <td data-th="${labels.etichetta}">${r.etichetta}</td>
-              <td class="hide-sm" data-th="${labels.formato}">${r.formato ?? ''}</td>
-              <td class="hide-sm" data-th="${labels.box}">${r.box ?? ''}</td>
-              <td data-th="${labels.quantita}">
-                <span class="qty-badge ${low?'qty-low':''}">${qTxt}</span>
-              </td>
-              <td data-th="${labels.riservato}">
-                ${r.riservato==='YES' ? '<span class="badge yes">YES</span>' : '<span class="badge no">NO</span>'}
-              </td>
-            </tr>
-          `);
-        }
+      const filtered=applyFilters(data);
+      const sorted=sortData(filtered);
+      const total=sorted.length, start=page*pageSize();
+      const pageData=sorted.slice(start,start+pageSize());
+      rows.innerHTML="";
+      if(!pageData.length){rows.innerHTML='<tr><td colspan="6" class="empty">Nessun risultato</td></tr>';return;}
+      for(const r of pageData){
+        const qRaw=r["quantità"]??r.quantita,qNum=qtyNumber(qRaw),qTxt=formatQuantita(qRaw),low=qNum!==null&&qNum<=LOW_STOCK_THRESHOLD;
+        rows.insertAdjacentHTML("beforeend",`
+          <tr>
+            <td></td>
+            <td data-th="Produttore">${r.produttore}</td>
+            <td data-th="Etichetta">${r.etichetta}</td>
+            <td data-th="Formato">${r.formato??""}</td>
+            <td data-th="Quantità"><span class="qty-badge ${low?'qty-low':''}">${qTxt}</span></td>
+            <td data-th="Riservato">${r.riservato==="YES"?'<span class="badge yes">YES</span>':'<span class="badge no">NO</span>'}</td>
+          </tr>`);
       }
-      const total = filtered.length;
-      const from = total ? (page*pageSize()+1) : 0;
-      const to   = Math.min((page+1)*pageSize(), total);
-      $("status").textContent = total ? `${from}–${to} di ${fmtInt(total)} risultati` : '0 risultati';
-
-      buildPagination(total, page);
+      const from=total?start+1:0,to=Math.min(start+pageSize(),total);
+      $("status").textContent=total?`${from}–${to} di ${fmtInt(total)} risultati`:"0 risultati";
+      buildPagination(total,page);
     }
 
-    function unique(list, key){
-      const set = new Set(list.map(x=>x[key]).filter(Boolean));
-      return Array.from(set).sort();
-    }
-
-    function populateFilters(){
-      const ps = unique(data, 'produttore');
-      const fs = unique(data, 'formato');
-      $("produttore").innerHTML = '<option value="">Tutti</option>' + ps.map(x=>`<option>${x}</option>`).join('');
-      $("formato").innerHTML    = '<option value="">Tutti</option>' + fs.map(x=>`<option>${x}</option>`).join('');
-    }
-
-    // ===== API =====
-    function keyOf(r){ return [r.produttore, r.etichetta, r.formato].join('||'); }
+    function unique(list,key){return Array.from(new Set(list.map(x=>x[key]).filter(Boolean))).sort();}
+    function populateFilters(){const ps=unique(data,"produttore"),fs=unique(data,"formato");$("produttore").innerHTML='<option value="">Tutti</option>'+ps.map(x=>`<option>${x}</option>`).join('');$("formato").innerHTML='<option value="">Tutti</option>'+fs.map(x=>`<option>${x}</option>`).join('');}
+    function keyOf(r){return [r.produttore,r.etichetta,r.formato].join("||");}
 
     async function initialLoad(){
-      rows.innerHTML = '<tr><td colspan="7" class="empty">Caricamento…</td></tr>';
-      const showReserved = $("riservato").value === "yes";
-      const params = new URLSearchParams();
-      if(showReserved) params.set("include_reserved","true");
-      const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
-      const r = await fetch(url, {cache:'no-store'});
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      data = await r.json();
-      populateFilters();
-      render();
-    }
-
-    async function updateQuantities(){
-      try{
-        const showReserved = $("riservato").value === "yes";
-        const params = new URLSearchParams();
-        if(showReserved) params.set("include_reserved","true");
-        const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
-        const r = await fetch(url, {cache:'no-store'});
-        if(!r.ok) throw new Error('HTTP '+r.status);
-        const latest = await r.json();
-
-        const map = new Map(latest.map(x => [keyOf(x), x["quantità"] ?? x.quantita]));
-        let changed = false;
-
-        for(const row of data){
-          const k = keyOf(row);
-          if(map.has(k)){
-            const newQ = map.get(k);
-            const oldQ = row["quantità"] ?? row.quantita;
-            if(String(newQ) !== String(oldQ)){
-              if ("quantità" in row) row["quantità"] = newQ; else row.quantita = newQ;
-              changed = true;
-            }
-          }
-        }
-        if(changed) render();
-      }catch(e){
-        console.warn("Auto-refresh fallito:", e.message);
-      }
-    }
-
-    function wireUI(){
-      $("q").addEventListener("input", ()=>{ page=0; render(); });
-      $("produttore").addEventListener("change", ()=>{ page=0; render(); });
-      $("formato").addEventListener("change", ()=>{ page=0; render(); });
-      $("riservato").addEventListener("change", ()=>{ initialLoad(); });
-
-      // Ordinamento clic intestazioni (solo desktop)
-      document.querySelectorAll("th[data-sort]").forEach(th=>{
-        th.style.cursor='pointer';
-        th.addEventListener("click",()=>{
-          const by = th.getAttribute("data-sort");
-          if(sort.by===by){ sort.dir = (sort.dir==='asc'?'desc':'asc'); }
-          else { sort.by=by; sort.dir='asc'; }
-          page = 0;
-          render();
-        });
-      });
-
-      // Paginazione
-      $("pagination").addEventListener("click", (e)=>{
-        const btn = e.target.closest("button[data-page]");
-        if(!btn || btn.disabled) return;
-        const target = parseInt(btn.dataset.page, 10);
-        if(Number.isFinite(target)){
-          page = target;
-          render();
-          window.scrollTo({top:0, behavior:'smooth'});
-        }
-      });
-
-      // Ricalcola page size se cambia breakpoint
-      matchMedia("(max-width:640px)").addEventListener("change", ()=>{ page=0; render(); });
-    }
-
-    function init(){
-      rows = $("rows");
-      pagination = $("pagination");
-      wireUI();
-      initialLoad().catch(e=>{
-        rows.innerHTML = `<tr><td colspan="7" class="empty">Errore di caricamento. Verifica connessione o riprova.</td></tr>`;
-        console.error("Errore initialLoad:", e);
-      });
-      setInterval(updateQuantities, AUTO_REFRESH_MS);
-    }
-
-    if (document.readyState === "loading"){
-      document.addEventListener("DOMContentLoaded", init, {once:true});
-    } else { init(); }
-  })();
-  </script>
-</body>
-</html>
+      rows.innerHTML='<tr><td colspan="6" class="empty">Caricamento…</td></tr>';
+      const show=$("riservato").value==="yes";const params=new URLSearchParams();if(show)params
