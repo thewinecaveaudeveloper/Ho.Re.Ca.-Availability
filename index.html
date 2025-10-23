@@ -187,82 +187,265 @@
   </footer>
 
   <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const API_BASE = "https://api.thewinecaveau.com";
-    const ENDPOINT  = API_BASE + '/availability';
-    const PAGE_SIZE = 50;
-    const LOW_STOCK_THRESHOLD = 6;
-    const AUTO_REFRESH_MS = 30000;
+(function(){
+  const API_BASE = "https://api.thewinecaveau.com";
+  const ENDPOINT  = API_BASE + '/availability';
+  const PAGE_SIZE = 50;
+  const LOW_STOCK_THRESHOLD = 6;
+  const AUTO_REFRESH_MS = 30000;
 
-    let data = [];
-    let page = 0;
-    let sort = { by: 'produttore', dir: 'asc' };
+  let data = [];
+  let page = 0;
+  let sort = { by: 'produttore', dir: 'asc' };
 
-    const $ = (id)=>document.getElementById(id);
-    const rows = $('rows');
-    const status = $('status');
-    const pagination = $('pagination');
+  const $ = (id)=>document.getElementById(id);
 
-    function fmtInt(n){ return Intl.NumberFormat('it-IT').format(n); }
+  let rows, status, pagination;
 
-    /* ===== Helpers quantità ===== */
-    function normalizeQty(raw) {
-      const s = (raw ?? "").toString().trim();
-      if (!s) return "";
-      if (/^su\s*richiesta$/i.test(s)) return "Su richiesta";
-      if (/^(nan|null|none)$/i.test(s)) return "Su richiesta";
-      return s;
+  function fmtInt(n){ return Intl.NumberFormat('it-IT').format(n); }
+
+  /* ===== Helpers quantità ===== */
+  function normalizeQty(raw) {
+    const s = (raw ?? "").toString().trim();
+    if (!s) return "";
+    if (/^su\s*richiesta$/i.test(s)) return "Su richiesta";
+    if (/^(nan|null|none)$/i.test(s)) return "Su richiesta";
+    return s;
+  }
+  function qtyNumber(raw) {
+    const s = normalizeQty(raw);
+    const n = Number(s.replace(",", "."));
+    return Number.isFinite(n) ? n : null;
+  }
+  function formatQuantita(raw) {
+    const s = normalizeQty(raw);
+    if (!s) return "—";
+    const n = Number(s.replace(",", "."));
+    return Number.isFinite(n) ? String(n) : s;
+  }
+
+  /* ===== Filtri, sort, paging ===== */
+  function applyFilters(src){
+    const q = $('q').value.trim().toLowerCase();
+    const p = $('produttore').value;
+    const f = $('formato').value;
+    const showReserved = $('riservato').value === 'yes';
+    return src.filter(r=>{
+      if(!showReserved && r.riservato === 'YES') return false;
+      if(p && r.produttore !== p) return false;
+      if(f && r.formato !== f) return false;
+      if(q){
+        const hay = (r.produttore + ' ' + r.etichetta).toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  function sortData(arr){
+    const {by,dir} = sort;
+    const s = [...arr].sort((a,b)=>{
+      if (by === 'quantità') {
+        const na = qtyNumber(a["quantità"] ?? a.quantita);
+        const nb = qtyNumber(b["quantità"] ?? b.quantita);
+        if (na === null && nb === null) {
+          const sa = normalizeQty(a["quantità"] ?? a.quantita).toLowerCase();
+          const sb = normalizeQty(b["quantità"] ?? b.quantita).toLowerCase();
+          if (sa<sb) return -1; if (sa>sb) return 1; return 0;
+        }
+        if (na === null) return 1;
+        if (nb === null) return -1;
+        return na - nb;
+      }
+      const va = (a[by] ?? '').toString().toLowerCase();
+      const vb = (b[by] ?? '').toString().toLowerCase();
+      if(va<vb) return -1; if(va>vb) return 1; return 0;
+    });
+    return dir==='asc'? s : s.reverse();
+  }
+
+  function buildPagination(total, current){
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const btn = (label, target, disabled=false, active=false) =>
+      `<button class="pager ${disabled?'disabled':''} ${active?'active':''}" data-page="${target}" ${disabled?'disabled':''}>${label}</button>`;
+
+    let html = '';
+    html += btn('‹', current - 1, current <= 0);
+
+    const maxButtons = 7;
+    const lastIndex = totalPages - 1;
+    let start = Math.max(0, current - 3);
+    let end = Math.min(totalPages, start + maxButtons);
+    if (end - start < maxButtons) start = Math.max(0, end - maxButtons);
+
+    if (start > 0){
+      html += btn('1', 0, false, current===0);
+      if (start > 1) html += '<span class="dots">…</span>';
     }
-    function qtyNumber(raw) {
-      const s = normalizeQty(raw);
-      const n = Number(s.replace(",", "."));
-      return Number.isFinite(n) ? n : null;
+    for (let i = start; i < end; i++){
+      html += btn(String(i+1), i, false, current===i);
     }
-    function formatQuantita(raw) {
-      const s = normalizeQty(raw);
-      if (!s) return "—";
-      const n = Number(s.replace(",", "."));
-      return Number.isFinite(n) ? String(n) : s;
+    if (end < totalPages){
+      if (end < totalPages - 1) html += '<span class="dots">…</span>';
+      html += btn(String(totalPages), lastIndex, false, current===lastIndex);
     }
+    html += btn('›', current + 1, current >= lastIndex);
+    pagination.innerHTML = html;
+  }
 
-    /* ===== Filtri, sort, paging ===== */
-    function applyFilters(src){
-      const q = $('q').value.trim().toLowerCase();
-      const p = $('produttore').value;
-      const f = $('formato').value;
+  function paginate(arr){
+    const start = page * PAGE_SIZE;
+    return arr.slice(start, start + PAGE_SIZE);
+  }
+
+  function clampPage(total){
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (page >= totalPages) page = totalPages - 1;
+    if (page < 0) page = 0;
+  }
+
+  function render(){
+    const filtered = applyFilters(data);
+    const sorted   = sortData(filtered);
+    clampPage(sorted.length);
+    const pageData = paginate(sorted);
+
+    rows.innerHTML = '';
+    if(pageData.length===0){
+      rows.innerHTML = '<tr><td colspan="7" class="empty">Nessun risultato</td></tr>';
+    } else {
+      for(const r of pageData){
+        const qRaw = r["quantità"] ?? r.quantita;
+        const qNum = qtyNumber(qRaw);
+        const qTxt = formatQuantita(qRaw);
+        const low = qNum !== null && qNum <= LOW_STOCK_THRESHOLD;
+
+        rows.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td></td>
+            <td>${r.produttore}</td>
+            <td>${r.etichetta}</td>
+            <td class="hide-sm">${r.formato ?? ''}</td>
+            <td class="hide-sm">${r.box ?? ''}</td>
+            <td><span class="qty-badge ${low?'qty-low':''}">${qTxt}</span></td>
+            <td>${r.riservato==='YES' ? '<span class="badge yes">YES</span>' : '<span class="badge no">NO</span>'}</td>
+          </tr>
+        `);
+      }
+    }
+    const total = filtered.length;
+    const from = total ? (page*PAGE_SIZE+1) : 0;
+    const to = Math.min((page+1)*PAGE_SIZE, total);
+    $('status').textContent = total ? `${from}–${to} di ${fmtInt(total)} risultati` : '0 risultati';
+
+    buildPagination(total, page);
+  }
+
+  function unique(list, key){
+    const set = new Set(list.map(x=>x[key]).filter(Boolean));
+    return Array.from(set).sort();
+  }
+
+  function populateFilters(){
+    const ps = unique(data, 'produttore');
+    const fs = unique(data, 'formato');
+    $('produttore').innerHTML = '<option value="">Tutti</option>' + ps.map(x=>`<option>${x}</option>`).join('');
+    $('formato').innerHTML = '<option value="">Tutti</option>' + fs.map(x=>`<option>${x}</option>`).join('');
+  }
+
+  /* ===== API ===== */
+  function keyOf(r){
+    return [r.produttore, r.etichetta, r.formato].join('||');
+  }
+
+  async function initialLoad(){
+    rows.innerHTML = '<tr><td colspan="7" class="empty">Caricamento…</td></tr>';
+    const showReserved = $('riservato').value === 'yes';
+    const params = new URLSearchParams();
+    if(showReserved) params.set('include_reserved','true');
+    const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
+    const r = await fetch(url, {cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    data = await r.json();
+    populateFilters();
+    render();
+  }
+
+  async function updateQuantities(){
+    try{
       const showReserved = $('riservato').value === 'yes';
-      return src.filter(r=>{
-        if(!showReserved && r.riservato === 'YES') return false;
-        if(p && r.produttore !== p) return false;
-        if(f && r.formato !== f) return false;
-        if(q){
-          const hay = (r.produttore + ' ' + r.etichetta).toLowerCase();
-          if(!hay.includes(q)) return false;
-        }
-        return true;
-      });
-    }
+      const params = new URLSearchParams();
+      if(showReserved) params.set('include_reserved','true');
+      const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
+      const r = await fetch(url, {cache:'no-store'});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const latest = await r.json();
 
-    function sortData(arr){
-      const {by,dir} = sort;
-      const s = [...arr].sort((a,b)=>{
-        if (by === 'quantità') {
-          const na = qtyNumber(a["quantità"] ?? a.quantita);
-          const nb = qtyNumber(b["quantità"] ?? b.quantita);
-          if (na === null && nb === null) {
-            const sa = normalizeQty(a["quantità"] ?? a.quantita).toLowerCase();
-            const sb = normalizeQty(b["quantità"] ?? b.quantita).toLowerCase();
-            if (sa<sb) return -1; if (sa>sb) return 1; return 0;
+      const map = new Map(latest.map(x => [keyOf(x), x["quantità"] ?? x.quantita]));
+      let changed = false;
+
+      for(const row of data){
+        const k = keyOf(row);
+        if(map.has(k)){
+          const newQ = map.get(k);
+          const oldQ = row["quantità"] ?? row.quantita;
+          if(String(newQ) !== String(oldQ)){
+            if ("quantità" in row) row["quantità"] = newQ; else row.quantita = newQ;
+            changed = true;
           }
-          if (na === null) return 1;
-          if (nb === null) return -1;
-          return na - nb;
         }
-        const va = (a[by] ?? '').toString().toLowerCase();
-        const vb = (b[by] ?? '').toString().toLowerCase();
-        if(va<vb) return -1; if(va>vb) return 1; return 0;
-      });
-      return dir==='asc'? s : s.reverse();
+      }
+      if(changed) render();
+    }catch(e){
+      console.warn("Auto-refresh fallito:", e.message);
     }
+  }
 
-    function build
+  function wireUI(){
+    $('q').addEventListener('input', ()=>{ page=0; render(); });
+    $('produttore').addEventListener('change', ()=>{ page=0; render(); });
+    $('formato').addEventListener('change', ()=>{ page=0; render(); });
+    $('riservato').addEventListener('change', ()=>{ initialLoad(); });
+
+    document.querySelectorAll('th[data-sort]').forEach(th=>{
+      th.style.cursor='pointer';
+      th.addEventListener('click',()=>{
+        const by = th.getAttribute('data-sort');
+        if(sort.by===by){ sort.dir = (sort.dir==='asc'?'desc':'asc'); }
+        else { sort.by=by; sort.dir='asc'; }
+        page = 0;
+        render();
+      });
+    });
+
+    $('pagination').addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-page]');
+      if(!btn || btn.disabled) return;
+      const target = parseInt(btn.dataset.page, 10);
+      if(Number.isFinite(target)){
+        page = target;
+        render();
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
+    });
+  }
+
+  function init(){
+    rows = $('rows');
+    status = $('status');
+    pagination = $('pagination');
+    wireUI();
+    initialLoad().catch(e=>{
+      rows.innerHTML = `<tr><td colspan="7" class="empty">Errore di caricamento: ${e.message}</td></tr>`;
+    });
+    setInterval(updateQuantities, AUTO_REFRESH_MS);
+  }
+
+  // Esegui subito se il DOM è già pronto, altrimenti attendi
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init, {once:true});
+  } else {
+    init();
+  }
+})();
+</script>
