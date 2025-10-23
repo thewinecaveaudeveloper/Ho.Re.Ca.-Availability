@@ -63,12 +63,14 @@
       background:#0f141d;border-bottom:1px solid var(--border);
       text-align:left;font-size:12px;color:var(--muted);padding:10px
     }
-    /* Produttore | Etichetta | Formato | Quantità | Riservato */
-    thead th:nth-child(1){width:30%}
-    thead th:nth-child(2){width:36%}
-    thead th:nth-child(3){width:14%}
-    thead th:nth-child(4){width:12%} /* più largo per “Su richiesta” */
-    thead th:nth-child(5){width:8%}
+    /* Produttore | Etichetta | Annata | Formato | Quantità | Prezzo | Riservato */
+    thead th:nth-child(1){width:24%}
+    thead th:nth-child(2){width:28%}
+    thead th:nth-child(3){width:10%}
+    thead th:nth-child(4){width:12%}
+    thead th:nth-child(5){width:12%} /* più largo per “Su richiesta” */
+    thead th:nth-child(6){width:10%}
+    thead th:nth-child(7){width:4%}
 
     tbody td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:14px;line-height:1.25;vertical-align:middle}
     tbody tr:hover{background:#131828}
@@ -77,6 +79,7 @@
       background:var(--chip);border:1px solid var(--border);font-size:13px;white-space:nowrap;
     }
     .qty-low{background:#231416;border-color:#3a1a1a;color:#ffb3b3}
+    .price{text-align:right;white-space:nowrap}
     .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;border:1px solid var(--border)}
     .badge.no{background:#101a13;color:#a8f0c2;border-color:#244c36}
     .badge.yes{background:#241313;color:#ffbdbd;border-color:#4a1e1e}
@@ -96,6 +99,7 @@
         color:var(--muted);font-size:12px;flex:0 0 auto;min-width:110px
       }
       .qty-badge{min-width:46px}
+      .price{text-align:left}
     }
 
     /* Footer tabella */
@@ -185,8 +189,8 @@
     <section class="panel">
       <div class="toolbar">
         <div class="field">
-          <label for="q">Cerca (produttore / etichetta)</label>
-          <input id="q" placeholder="Es. Dom Pérignon, Sassicaia, Barbaresco…" />
+          <label for="q">Cerca (produttore / etichetta / annata)</label>
+          <input id="q" placeholder="Es. Dom Pérignon, Sassicaia, 2018…" />
         </div>
         <div class="field">
           <label for="produttore">Produttore</label>
@@ -211,13 +215,15 @@
             <tr>
               <th data-sort="produttore">Produttore</th>
               <th data-sort="etichetta">Etichetta</th>
+              <th data-sort="annata">Annata</th>
               <th data-sort="formato">Formato</th>
               <th data-sort="quantità">Quantità</th>
+              <th data-sort="prezzo">Prezzo</th>
               <th>Riservato</th>
             </tr>
           </thead>
           <tbody id="rows">
-            <tr><td colspan="5" class="empty">Caricamento…</td></tr>
+            <tr><td colspan="7" class="empty">Caricamento…</td></tr>
           </tbody>
         </table>
       </div>
@@ -292,7 +298,6 @@
   (function(){
     const API_BASE = "https://api.thewinecaveau.com";
     const ENDPOINT = API_BASE + "/availability";
-    // ✅ endpoint corretto del backend per invio email
     const CONTACT_ENDPOINT = API_BASE + "/contact/request";
 
     const LOW_STOCK_THRESHOLD = 6;
@@ -304,14 +309,46 @@
     let rows, pagination;
 
     const labels = {
-      produttore:"Produttore", etichetta:"Etichetta", formato:"Formato", quantita:"Quantità", riservato:"Riservato"
+      produttore:"Produttore", etichetta:"Etichetta", annata:"Annata",
+      formato:"Formato", quantita:"Quantità", prezzo:"Prezzo", riservato:"Riservato"
     };
 
+    /* ----- Helpers Quantità & Prezzo ----- */
     function fmtInt(n){ return Intl.NumberFormat("it-IT").format(n); }
-    function normalizeQty(raw){const s=(raw??"").toString().trim();if(!s)return"";if(/^su\s*richiesta$/i.test(s))return"Su richiesta";if(/^(nan|null|none)$/i.test(s))return"Su richiesta";return s;}
-    function qtyNumber(raw){const s=normalizeQty(raw);const n=Number(s.replace(",","."));return Number.isFinite(n)?n:null;}
-    function formatQuantita(raw){const s=normalizeQty(raw);if(!s)return"—";const n=Number(s.replace(",","."));return Number.isFinite(n)?String(n):s;}
 
+    function normalizeQty(raw){
+      const s=(raw??"").toString().trim();
+      if(!s) return "";
+      if(/^su\s*richiesta$/i.test(s)) return "Su richiesta";
+      if(/^(nan|null|none)$/i.test(s)) return "Su richiesta";
+      return s;
+    }
+    function qtyNumber(raw){
+      const s=normalizeQty(raw);
+      const n=Number(s.replace(",","."));
+      return Number.isFinite(n)?n:null;
+    }
+    function formatQuantita(raw){
+      const s=normalizeQty(raw);
+      if(!s) return "—";
+      const n=Number(s.replace(",","."));
+      return Number.isFinite(n)?String(n):s;
+    }
+
+    function parsePrice(v){
+      if (v===null || v===undefined || v==="") return null;
+      const n=Number(String(v).replace(",","."));
+      return Number.isFinite(n)?n:null;
+    }
+    function formatEUR(v){
+      const n=parsePrice(v);
+      if(n===null) return "—";
+      try{
+        return new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"}).format(n);
+      }catch{ return String(v); }
+    }
+
+    /* ----- Filtri, ordinamenti, paginazione ----- */
     function applyFilters(src){
       const q=$("q").value.trim().toLowerCase(),p=$("produttore").value,f=$("formato").value;
       const showReserved=$("riservato").value==="yes";
@@ -319,7 +356,7 @@
         if(!showReserved&&r.riservato==="YES")return false;
         if(p&&r.produttore!==p)return false;
         if(f&&r.formato!==f)return false;
-        if(q&&!((r.produttore+" "+r.etichetta).toLowerCase().includes(q)))return false;
+        if(q && !((r.produttore+" "+r.etichetta+" "+(r.annata??"")).toLowerCase().includes(q)))return false;
         return true;
       });
     }
@@ -328,11 +365,31 @@
       const {by,dir}=sort;
       const s=[...arr].sort((a,b)=>{
         if(by==="quantità"){
-          const na=qtyNumber(a["quantità"]??a.quantita),nb=qtyNumber(b["quantità"]??b.quantita);
-          if(na===null&&nb===null){const sa=normalizeQty(a["quantità"]??a.quantita).toLowerCase(),sb=normalizeQty(b["quantità"]??b.quantita).toLowerCase();if(sa<sb)return-1;if(sa>sb)return 1;return 0;}
-          if(na===null)return 1;if(nb===null)return-1;return na-nb;
+          const na=qtyNumber(a["quantità"]??a.quantita), nb=qtyNumber(b["quantità"]??b.quantita);
+          if(na===null&&nb===null){
+            const sa=normalizeQty(a["quantità"]??a.quantita).toLowerCase();
+            const sb=normalizeQty(b["quantità"]??b.quantita).toLowerCase();
+            if(sa<sb)return-1;if(sa>sb)return 1;return 0;
+          }
+          if(na===null)return 1; if(nb===null)return -1; return na-nb;
         }
-        const va=(a[by]??"").toString().toLowerCase(),vb=(b[by]??"").toString().toLowerCase();
+        if(by==="prezzo"){
+          const pa=parsePrice(a.prezzo), pb=parsePrice(b.prezzo);
+          if(pa===null && pb===null) return 0;
+          if(pa===null) return 1;
+          if(pb===null) return -1;
+          return pa - pb;
+        }
+        if(by==="annata"){
+          // ordina annata come numero desc/asc naturale; stringhe non numeriche alla fine
+          const aa = Number(a.annata), bb = Number(b.annata);
+          if(Number.isFinite(aa) && Number.isFinite(bb)) return aa - bb;
+          const sa=(a.annata??"").toString().toLowerCase();
+          const sb=(b.annata??"").toString().toLowerCase();
+          if(sa<sb)return-1;if(sa>sb)return 1;return 0;
+        }
+        const va=(a[by]??"").toString().toLowerCase();
+        const vb=(b[by]??"").toString().toLowerCase();
         if(va<vb)return-1;if(va>vb)return 1;return 0;
       });
       return dir==="asc"?s:s.reverse();
@@ -355,22 +412,25 @@
     function paginate(arr){const start=page*pageSize();return arr.slice(start,start+pageSize());}
     function clampPage(total){const totalPages=Math.max(1,Math.ceil(total/pageSize()));if(page>=totalPages)page=totalPages-1;if(page<0)page=0;}
 
+    /* ----- Rendering ----- */
     function render(){
       const filtered=applyFilters(data),sorted=sortData(filtered);
       clampPage(sorted.length);const pageData=paginate(sorted);
 
       rows.innerHTML='';
       if(pageData.length===0){
-        rows.innerHTML='<tr><td colspan="5" class="empty">Nessun risultato</td></tr>';
+        rows.innerHTML='<tr><td colspan="7" class="empty">Nessun risultato</td></tr>';
       }else{
         for(const r of pageData){
-          const qRaw=r["quantità"]??r.quantita,qNum=qtyNumber(qRaw),qTxt=formatQuantita(qRaw),low=qNum!==null&&qNum<=LOW_STOCK_THRESHOLD;
+          const qRaw=r["quantità"]??r.quantita, qNum=qtyNumber(qRaw), qTxt=formatQuantita(qRaw), low=qNum!==null&&qNum<=LOW_STOCK_THRESHOLD;
           rows.insertAdjacentHTML('beforeend',`
             <tr>
               <td data-th="${labels.produttore}">${r.produttore}</td>
               <td data-th="${labels.etichetta}">${r.etichetta}</td>
+              <td data-th="${labels.annata}">${r.annata ?? ""}</td>
               <td data-th="${labels.formato}">${r.formato??''}</td>
               <td data-th="${labels.quantita}"><span class="qty-badge ${low?'qty-low':''}">${qTxt}</span></td>
+              <td data-th="${labels.prezzo}" class="price">${formatEUR(r.prezzo)}</td>
               <td data-th="${labels.riservato}">${r.riservato==='YES'?'<span class="badge yes">YES</span>':'<span class="badge no">NO</span>'}</td>
             </tr>`);
         }
@@ -387,10 +447,11 @@
       $("formato").innerHTML   ='<option value="">Tutti</option>'+fs.map(x=>`<option>${x}</option>`).join('');
     }
 
-    function keyOf(r){return [r.produttore,r.etichetta,r.formato].join('||');}
+    function keyOf(r){return [r.produttore,r.etichetta,r.formato,r.annata??""].join('||');}
 
+    /* ----- Data fetching ----- */
     async function initialLoad(){
-      rows.innerHTML = '<tr><td colspan="5" class="empty">Caricamento…</td></tr>';
+      rows.innerHTML = '<tr><td colspan="7" class="empty">Caricamento…</td></tr>';
       const showReserved=$("riservato").value==="yes";
       const params=new URLSearchParams(); if(showReserved) params.set("include_reserved","true");
       const url=ENDPOINT+(params.toString()?('?'+params.toString()):'');
@@ -399,26 +460,30 @@
       populateFilters(); render();
     }
 
-    async function updateQuantities(){
+    // refresh leggero: aggiorna quantità e prezzo se cambiano
+    async function updateShallow(){
       try{
         const showReserved=$("riservato").value==="yes";
         const params=new URLSearchParams(); if(showReserved) params.set("include_reserved","true");
         const url=ENDPOINT+(params.toString()?('?'+params.toString()):'');
         const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
         const latest=await r.json();
-        const map=new Map(latest.map(x=>[keyOf(x), x["quantità"]??x.quantita]));
+        const map=new Map(latest.map(x=>[keyOf(x), {q:x["quantità"]??x.quantita, p:x.prezzo}]));
         let changed=false;
         for(const row of data){
           const k=keyOf(row);
           if(map.has(k)){
-            const newQ=map.get(k),oldQ=row["quantità"]??row.quantita;
+            const {q:newQ, p:newP}=map.get(k);
+            const oldQ=row["quantità"]??row.quantita;
             if(String(newQ)!==String(oldQ)){ if("quantità" in row) row["quantità"]=newQ; else row.quantita=newQ; changed=true; }
+            if(String(newP)!==String(row.prezzo)){ row.prezzo=newP; changed=true; }
           }
         }
         if(changed) render();
       }catch(e){ console.warn("Auto-refresh fallito:", e.message); }
     }
 
+    /* ----- UI wiring ----- */
     function wireUI(){
       $("q").addEventListener("input", ()=>{ page=0; render(); });
       $("produttore").addEventListener("change", ()=>{ page=0; render(); });
@@ -460,9 +525,8 @@
           email: f.email.value.trim(),
           telefono: f.telefono.value.trim(),
           richiesta: f.messaggio.value.trim(),
-          hp: f.hp.value.trim() // honeypot
+          hp: f.hp.value.trim()
         };
-        // Blocking bot/honeypot + required
         if (data.hp){ return; }
         if (!data.nome || !data.cognome || !data.email || !data.telefono || !data.richiesta){
           $("formHint").innerHTML = '<span class="err">Compila tutti i campi obbligatori.</span>';
@@ -500,10 +564,10 @@
       rows=$("rows"); pagination=$("pagination");
       wireUI();
       initialLoad().catch(e=>{
-        rows.innerHTML=`<tr><td colspan="5" class="empty">Errore di caricamento. Verifica connessione o riprova.</td></tr>`;
+        rows.innerHTML=`<tr><td colspan="7" class="empty">Errore di caricamento. Verifica connessione o riprova.</td></tr>`;
         console.error("Errore initialLoad:", e);
       });
-      setInterval(updateQuantities, AUTO_REFRESH_MS);
+      setInterval(updateShallow, AUTO_REFRESH_MS);
     }
 
     if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init, {once:true}); }
