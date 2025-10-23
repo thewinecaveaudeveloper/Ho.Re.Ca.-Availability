@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TWC | Disponibilità Ho.Re.Ca.</title>
   <style>
-    :root{
-      --bg:#0f1115; --panel:#171a21; --muted:#8b95a7; --text:#e6eaf2;
-      --brand:#b48bff; --accent:#5be49b; --danger:#ff6b6b; --border:#252a34;
-    }
+    :root{ --bg:#0f1115; --panel:#171a21; --muted:#8b95a7; --text:#e6eaf2;
+      --brand:#b48bff; --accent:#5be49b; --danger:#ff6b6b; --border:#252a34; }
     *{box-sizing:border-box}
     html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
       font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
@@ -17,20 +15,13 @@
     header{display:flex;align-items:center;gap:16px;margin-bottom:16px}
     .logo{height:160px;width:auto}
     .title{font-size:24px;font-weight:700}
-    .sub{color:var(--muted);font-size:12px}
     .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px}
-    .toolbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px}
+    .toolbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
     .toolbar .field{display:flex;flex-direction:column;gap:6px}
     label{font-size:12px;color:var(--muted)}
-    input,select,button{background:#0e1117;border:1px solid var(--border);
+    input,select{background:#0e1117;border:1px solid var(--border);
       color:var(--text);padding:10px 12px;border-radius:10px;font-size:14px}
     input::placeholder{color:#6b7280}
-    button{cursor:pointer}
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;
-      border-radius:12px;border:1px solid var(--border);background:#121620}
-    .btn.primary{background:var(--brand);border-color:transparent;color:#1d1038}
-    .btn.success{background:var(--accent);border-color:transparent;color:#052b1a}
-    .btn.ghost{background:#0e1117}
     .tablewrap{margin-top:12px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
     table{width:100%;border-collapse:separate;border-spacing:0}
     thead th{position:sticky;top:0;background:#0f141d;border-bottom:1px solid var(--border);
@@ -57,12 +48,9 @@
 <body>
   <div class="container">
     <header>
-      <!-- ✅ Logo aggiornato con URL esterno -->
       <img id="logo" class="logo" alt="TWC Logo"
         src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
-      <div>
-        <div class="title">Disponibilità Ho.Re.Ca.</div>
-        </div>
+      <div><div class="title">Disponibilità Ho.Re.Ca.</div></div>
     </header>
 
     <section class="panel">
@@ -85,10 +73,6 @@
             <option value="no" selected>No</option>
             <option value="yes">Sì</option>
           </select>
-        </div>
-        <div class="field" style="align-self:end;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-          <button id="refresh" class="btn ghost">Aggiorna</button>
-          <button id="export" class="btn success">Esporta CSV</button>
         </div>
       </div>
 
@@ -122,7 +106,6 @@
 
   <script>
   window.addEventListener('DOMContentLoaded', () => {
-
     const API_BASE = "https://api.thewinecaveau.com";
     const ENDPOINT  = API_BASE + '/availability';
     const PAGE_SIZE = 50;
@@ -139,6 +122,27 @@
 
     function fmtInt(n){ return Intl.NumberFormat('it-IT').format(n); }
 
+    /* ===== Helpers quantità ===== */
+    function normalizeQty(raw) {
+      const s = (raw ?? "").toString().trim();
+      if (!s) return "";
+      if (/^su\s*richiesta$/i.test(s)) return "Su richiesta";
+      if (/^(nan|null|none)$/i.test(s)) return "Su richiesta";
+      return s;
+    }
+    function qtyNumber(raw) {
+      const s = normalizeQty(raw);
+      const n = Number(s.replace(",", "."));
+      return Number.isFinite(n) ? n : null;
+    }
+    function formatQuantita(raw) {
+      const s = normalizeQty(raw);
+      if (!s) return "—";
+      const n = Number(s.replace(",", "."));
+      return Number.isFinite(n) ? String(n) : s;
+    }
+
+    /* ===== Filtri, sort, paging ===== */
     function applyFilters(src){
       const q = el('q').value.trim().toLowerCase();
       const p = el('produttore').value;
@@ -159,6 +163,18 @@
     function sortData(arr){
       const {by,dir} = sort;
       const s = [...arr].sort((a,b)=>{
+        if (by === 'quantità') {
+          const na = qtyNumber(a["quantità"] ?? a.quantita);
+          const nb = qtyNumber(b["quantità"] ?? b.quantita);
+          if (na === null && nb === null) {
+            const sa = normalizeQty(a["quantità"] ?? a.quantita).toLowerCase();
+            const sb = normalizeQty(b["quantità"] ?? b.quantita).toLowerCase();
+            if (sa<sb) return -1; if (sa>sb) return 1; return 0;
+          }
+          if (na === null) return 1;
+          if (nb === null) return -1;
+          return na - nb;
+        }
         const va = (a[by] ?? '').toString().toLowerCase();
         const vb = (b[by] ?? '').toString().toLowerCase();
         if(va<vb) return -1; if(va>vb) return 1; return 0;
@@ -180,7 +196,11 @@
         rows.innerHTML = '<tr><td colspan="7" class="empty">Nessun risultato</td></tr>';
       } else {
         for(const r of pageData){
-          const low = (r.quantità ?? 0) <= LOW_STOCK_THRESHOLD;
+          const qRaw = r["quantità"] ?? r.quantita;
+          const qNum = qtyNumber(qRaw);
+          const qTxt = formatQuantita(qRaw);
+          const low = qNum !== null && qNum <= LOW_STOCK_THRESHOLD;
+
           rows.insertAdjacentHTML('beforeend', `
             <tr>
               <td></td>
@@ -188,7 +208,7 @@
               <td>${r.etichetta}</td>
               <td class="hide-sm">${r.formato ?? ''}</td>
               <td class="hide-sm">${r.box ?? ''}</td>
-              <td><span class="qty-badge ${low?'qty-low':''}">${fmtInt(r.quantità ?? 0)}</span></td>
+              <td><span class="qty-badge ${low?'qty-low':''}">${qTxt}</span></td>
               <td>
                 ${r.riservato==='YES' ? '<span class="badge yes">YES</span>' : '<span class="badge no">NO</span>'}
               </td>
@@ -210,15 +230,30 @@
     function populateFilters(){
       const ps = unique(data, 'produttore');
       const fs = unique(data, 'formato');
-      const prodSel = el('produttore');
-      const formSel = el('formato');
-      prodSel.innerHTML = '<option value="">Tutti</option>' + ps.map(x=>`<option>${x}</option>`).join('');
-      formSel.innerHTML = '<option value="">Tutti</option>' + fs.map(x=>`<option>${x}</option>`).join('');
+      el('produttore').innerHTML = '<option value="">Tutti</option>' + ps.map(x=>`<option>${x}</option>`).join('');
+      el('formato').innerHTML = '<option value="">Tutti</option>' + fs.map(x=>`<option>${x}</option>`).join('');
     }
 
-    async function fetchData(){
-      console.log("▶ Chiamata API:", ENDPOINT);
+    /* ===== API ===== */
+    function keyOf(r){
+      // chiave stabile per matching tra dataset (non cambia con refresh)
+      return [r.produttore, r.etichetta, r.formato].join('||');
+    }
+
+    async function initialLoad(){
       rows.innerHTML = '<tr><td colspan="7" class="empty">Caricamento…</td></tr>';
+      const showReserved = el('riservato').value === 'yes';
+      const params = new URLSearchParams();
+      if(showReserved) params.set('include_reserved','true');
+      const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
+      const r = await fetch(url, {cache:'no-store'});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      data = await r.json();
+      populateFilters();           // solo al primo load
+      render();                    // non azzero page
+    }
+
+    async function updateQuantities(){
       try{
         const showReserved = el('riservato').value === 'yes';
         const params = new URLSearchParams();
@@ -226,24 +261,35 @@
         const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
         const r = await fetch(url, {cache:'no-store'});
         if(!r.ok) throw new Error('HTTP '+r.status);
-        data = await r.json();
-        populateFilters();
-        page=0; render();
+        const latest = await r.json();
+
+        // mappa quantità (e solo quella) dagli ultimi dati
+        const map = new Map(latest.map(x => [keyOf(x), x["quantità"] ?? x.quantita]));
+        let changed = false;
+
+        for(const row of data){
+          const k = keyOf(row);
+          if(map.has(k)){
+            const newQ = map.get(k);
+            const oldQ = row["quantità"] ?? row.quantita;
+            if(String(newQ) !== String(oldQ)){
+              // aggiorna solo la quantità
+              if ("quantità" in row) row["quantità"] = newQ; else row.quantita = newQ;
+              changed = true;
+            }
+          }
+        }
+        if(changed) render();  // non tocco filtri/pagina
       }catch(e){
-        console.error("Errore API:", e);
-        rows.innerHTML = `<tr><td colspan="7" class="empty">Errore di caricamento: ${e.message}</td></tr>`;
+        console.warn("Auto-refresh fallito:", e.message);
       }
     }
 
-    // Eventi e refresh automatico
+    // Eventi UI
     el('q').addEventListener('input', ()=>{ page=0; render(); });
     el('produttore').addEventListener('change', ()=>{ page=0; render(); });
     el('formato').addEventListener('change', ()=>{ page=0; render(); });
-    el('riservato').addEventListener('change', ()=>{ fetchData(); });
-    el('refresh').addEventListener('click', fetchData);
-    el('prev').addEventListener('click', ()=>{ if(page>0){page--; render();}});
-    el('next').addEventListener('click', ()=>{ const filtered=applyFilters(data); if((page+1)*PAGE_SIZE<filtered.length){page++; render();}});
-
+    el('riservato').addEventListener('change', ()=>{ initialLoad(); }); // ricarica completo per coerenza dataset
     document.querySelectorAll('th[data-sort]').forEach(th=>{
       th.style.cursor='pointer';
       th.addEventListener('click',()=>{
@@ -254,29 +300,13 @@
       });
     });
 
-    function toCSV(){
-      const header = ['produttore','etichetta','formato','box','quantità','riservato'];
-      const escape = v => ('"'+String(v??'').replaceAll('"','""')+'"');
-      const lines = [header.join(',')];
-      const filtered = sortData(applyFilters(data));
-      for(const r of filtered){
-        lines.push([r.produttore,r.etichetta,r.formato||'',r.box||'',r.quantità||0,r.riservato].map(escape).join(','));
-      }
-      return lines.join('\n');
-    }
-
-    el('export').addEventListener('click',()=>{
-      const csv = toCSV(data);
-      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'disponibilita.csv';
-      document.body.appendChild(a); a.click(); a.remove();
+    // boot
+    initialLoad().catch(e=>{
+      rows.innerHTML = `<tr><td colspan="7" class="empty">Errore di caricamento: ${e.message}</td></tr>`;
     });
-
-    setInterval(fetchData, AUTO_REFRESH_MS);
-    fetchData();
+    setInterval(updateQuantities, AUTO_REFRESH_MS);
   });
   </script>
 </body>
 </html>
+
