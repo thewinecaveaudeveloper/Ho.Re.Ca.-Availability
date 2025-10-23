@@ -53,10 +53,23 @@
     }
     /* 5 colonne: Produttore | Etichetta | Formato | Quantità | Riservato */
     thead th:nth-child(1){width:30%}
-    thead th:nth-child(2){width:39%}
+    thead th:nth-child(2){width:36%}
     thead th:nth-child(3){width:14%}
-    thead th:nth-child(4){width:9%}
+    thead th:nth-child(4){width:12%}
     thead th:nth-child(5){width:8%}
+
+    /* evita l'a-capo dentro il badge quantità */
+    .qty-badge{ 
+      display:inline-block;
+      min-width:32px;
+      text-align:center;
+      padding:3px 8px;
+      border-radius:999px;
+      background:var(--chip);
+      border:1px solid var(--border);
+      font-size:13px;
+      white-space: nowrap;   /* ← aggiunto */
+    }
 
     tbody td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:14px;line-height:1.25;vertical-align:middle}
     tbody tr:hover{background:#131828}
