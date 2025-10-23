@@ -3,67 +3,94 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f1115" />
   <title>TWC | Disponibilità Ho.Re.Ca.</title>
+
+  <!-- Performance hints -->
+  <link rel="preconnect" href="https://api.thewinecaveau.com" crossorigin>
+  <link rel="preconnect" href="https://shop.thewinecaveau.com" crossorigin>
+
   <style>
     :root{
       --bg:#0f1115; --panel:#171a21; --muted:#8b95a7; --text:#e6eaf2;
       --brand:#b48bff; --accent:#5be49b; --danger:#ff6b6b; --border:#252a34;
       --chip:#10161f;
+      --container-padding:24px;
+      --max-width:1200px;
+      --gap:12px;
+      --radius:12px;
+      --break-sm:700px;
+      --break-md:900px;
+      --fav-refresh-ms:30000;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
-      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+
+    /* Reset & base */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial; -webkit-font-smoothing:antialiased}
     a{color:var(--brand);text-decoration:none}
-    .container{max-width:1200px;margin:0 auto;padding:24px}
+    .container{max-width:var(--max-width);margin:0 auto;padding:var(--container-padding)}
 
     /* Header */
     header{display:flex;align-items:center;gap:16px;margin-bottom:8px}
-    .logo{height:140px;width:auto} /* leggermente più piccolo */
-    .title{font-size:24px;font-weight:700}
+    .logo{height:96px;width:auto;display:block;border-radius:8px}
+    .title{font-size:20px;font-weight:700}
 
     /* Contact banner */
     .contactbar{
-      display:flex;flex-wrap:wrap;gap:16px;align-items:center;
-      background:#121620;border:1px solid var(--border);border-radius:12px;
+      display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+      background:#0e1116;border:1px solid var(--border);border-radius:var(--radius);
       padding:10px 12px;margin:10px 0 18px 0
     }
-    .contact-item{display:flex;align-items:center;gap:8px;color:var(--text);font-size:14px}
+    .contact-item{display:flex;align-items:center;gap:8px;color:var(--text);font-size:13px}
     .contact-item svg{width:16px;height:16px;opacity:.9;flex:0 0 16px}
     .contact-item a{color:var(--text)}
     .contact-sep{width:1px;height:18px;background:var(--border);opacity:.8}
 
-    /* Panel + toolbar */
+    /* Panel + toolbar - responsive */
     .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px}
-    .toolbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+    .toolbar{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:10px;
+      align-items:start;
+    }
     .toolbar .field{display:flex;flex-direction:column;gap:6px}
     label{font-size:12px;color:var(--muted)}
     input,select{background:#0e1117;border:1px solid var(--border);
       color:var(--text);padding:10px 12px;border-radius:10px;font-size:14px}
     input::placeholder{color:#6b7280}
 
-    /* Tabella (righe più “basse”) */
+    /* compact toolbar on very small screens */
+    @media (max-width:420px){
+      .toolbar{grid-template-columns:1fr}
+      .logo{height:72px}
+      .title{font-size:18px}
+    }
+
+    /* Table + responsive card view at small screens */
     .tablewrap{margin-top:12px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
-    table{width:100%;border-collapse:separate;border-spacing:0}
+    table{width:100%;border-collapse:collapse;font-size:14px}
     thead th{
       position:sticky;top:0;background:#0f141d;border-bottom:1px solid var(--border);
-      text-align:left;font-size:12px;color:var(--muted);padding:8px
+      text-align:left;font-size:12px;color:var(--muted);padding:10px 12px
     }
     tbody td{
-      padding:8px 10px; /* era 12px -> righe più compatte */
-      border-bottom:1px solid var(--border);font-size:14px;line-height:1.25
+      padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;
+      line-height:1.25
     }
     tbody tr:hover{background:#131828}
 
     .qty-badge{
-      display:inline-block;min-width:32px;text-align:center;padding:3px 8px;
-      border-radius:999px;background:var(--chip);border:1px solid var(--border);font-size:13px
+      display:inline-block;min-width:36px;text-align:center;padding:4px 10px;border-radius:999px;
+      background:var(--chip);border:1px solid var(--border);font-size:13px
     }
-    .qty-low{background:#231416;border-color:#3a1a1a;color:#ffb3b3}
-    .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;border:1px solid var(--border)}
+    .qty-low{background:#2b1616;border-color:#4b1f1f;color:#ffb3b3}
+    .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid var(--border)}
     .badge.no{background:#101a13;color:#a8f0c2;border-color:#244c36}
     .badge.yes{background:#241313;color:#ffbdbd;border-color:#4a1e1e}
 
-    /* Footer della tabella (status + paginator) */
+    /* Footer della tabella */
     .tablefooter{
       display:flex;justify-content:space-between;align-items:center;margin-top:12px;
       color:var(--muted);font-size:12px;gap:12px;flex-wrap:wrap
@@ -71,7 +98,7 @@
     .status{font-size:12px;color:var(--muted)}
 
     /* Pagination moderna */
-    .pagination{display:flex;align-items:center;gap:6px}
+    .pagination{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
     .pager{
       background:#111520;border:1px solid var(--border);color:var(--text);
       padding:8px 10px;border-radius:10px;font-size:13px;cursor:pointer;
@@ -85,16 +112,30 @@
 
     /* Site footer (legale) */
     .site-footer{
-      margin:18px auto 0 auto;max-width:1200px;padding:16px 24px;color:#cbd5e1;
+      margin:18px auto 0 auto;max-width:var(--max-width);padding:16px 24px;color:#cbd5e1;
       font-size:12px;line-height:1.4;border-top:1px solid var(--border)
     }
     .site-footer small{display:block;color:var(--muted)}
     .site-footer .cols{display:grid;grid-template-columns:1fr;gap:8px}
 
-    @media (max-width:900px){
-      .toolbar{grid-template-columns:1fr 1fr}
+    /* Responsive: switch table to "cards" on narrow screens */
+    @media (max-width: var(--break-sm)){
+      thead{display:none}
+      table, tbody, tr, td{display:block;width:100%}
+      tbody tr{margin:0 0 10px 0;border-bottom:1px solid var(--border);background:transparent;padding:10px;border-radius:10px}
+      tbody td{padding:8px 10px;position:relative}
+      tbody td::before{
+        content:attr(data-label);
+        display:block;font-size:12px;color:var(--muted);margin-bottom:4px;
+      }
       .hide-sm{display:none}
-      .contact-sep{display:none}
+      .tablewrap{padding:10px}
+    }
+
+    /* Respect reduced-motion preferences */
+    @media (prefers-reduced-motion: reduce){
+      .pager{transition:none}
+      html{scroll-behavior:auto}
     }
   </style>
 </head>
@@ -102,18 +143,24 @@
   <div class="container">
     <header>
       <img id="logo" class="logo" alt="TWC Logo"
-        src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
-      <div><div class="title">Disponibilità Ho.Re.Ca.</div></div>
+        src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png"
+        srcset="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png 1024w,
+                https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-512x512.png 512w"
+        sizes="(max-width:420px) 120px, 180px"
+        loading="lazy" width="300" height="70" />
+      <div>
+        <div class="title">Disponibilità Ho.Re.Ca.</div>
+      </div>
     </header>
 
     <!-- Banner contatti -->
     <div class="contactbar" aria-label="Contatti TWC">
       <div class="contact-item">
         <!-- icona telefono -->
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.56.57 1 1 0 011 1V20a1 1 0 01-1 1C10.4 21 3 13.6 3 4a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 00.57 3.56 1 1 0 01-.24 1.01l-2.21 2.22z"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.56.57 1 1 0 011 1V20a1 1 0 01-1 1C10.4 21 2 12.6 2 3a1 1 0 011-1h2.5a1 1 0 011 1c0 1.25.2 2.48.57 3.66a1 1 0 01-.25 1.01l-2.2 2.2z"/></svg>
         <a href="tel:+393917011180">+39 391 701 1180</a>
       </div>
-      <div class="contact-sep"></div>
+      <div class="contact-sep" aria-hidden="true"></div>
       <div class="contact-item">
         <!-- icona mail -->
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4a2 2 0 00-2 2v.4l10 6.25L22 6.4V6a2 2 0 00-2-2zm0 4.47l-8 5-8-5V18a2 2 0 002 2h12a2 2 0 002-2V8.47z"/></svg>
@@ -121,30 +168,30 @@
       </div>
     </div>
 
-    <section class="panel">
-      <div class="toolbar">
+    <section class="panel" aria-labelledby="panel-title">
+      <div class="toolbar" role="toolbar" aria-label="Filtri">
         <div class="field">
           <label for="q">Cerca (produttore / etichetta)</label>
-          <input id="q" placeholder="Es. Dom Pérignon, Sassicaia, Barbaresco…" />
+          <input id="q" placeholder="Es. Dom Pérignon, Sassicaia, Barbaresco…" aria-label="Cerca" />
         </div>
         <div class="field">
           <label for="produttore">Produttore</label>
-          <select id="produttore"><option value="">Tutti</option></select>
+          <select id="produttore" aria-label="Produttore"><option value="">Tutti</option></select>
         </div>
         <div class="field">
           <label for="formato">Formato</label>
-          <select id="formato"><option value="">Tutti</option></select>
+          <select id="formato" aria-label="Formato"><option value="">Tutti</option></select>
         </div>
         <div class="field">
           <label for="riservato">Mostra riservati</label>
-          <select id="riservato">
+          <select id="riservato" aria-label="Mostra riservati">
             <option value="no" selected>No</option>
             <option value="yes">Sì</option>
           </select>
         </div>
       </div>
 
-      <div class="tablewrap">
+      <div class="tablewrap" role="region" aria-label="Tabella disponibilità">
         <table>
           <thead>
             <tr>
@@ -164,7 +211,7 @@
       </div>
 
       <div class="tablefooter">
-        <div class="status" id="status">—</div>
+        <div class="status" id="status" aria-live="polite">—</div>
         <div class="pagination" id="pagination" aria-label="Paginazione"></div>
       </div>
     </section>
@@ -187,265 +234,348 @@
   </footer>
 
   <script>
-(function(){
-  const API_BASE = "https://api.thewinecaveau.com";
-  const ENDPOINT  = API_BASE + '/availability';
-  const PAGE_SIZE = 50;
-  const LOW_STOCK_THRESHOLD = 6;
-  const AUTO_REFRESH_MS = 30000;
+  (function(){
+    // Config - make refresh/page size adaptive for mobile
+    const API_BASE = "https://api.thewinecaveau.com";
+    const ENDPOINT  = API_BASE + '/availability';
+    let PAGE_SIZE = 50;
+    const LOW_STOCK_THRESHOLD = 6;
+    let AUTO_REFRESH_MS = 30000;
 
-  let data = [];
-  let page = 0;
-  let sort = { by: 'produttore', dir: 'asc' };
+    let data = [];
+    let page = 0;
+    let sort = { by: 'produttore', dir: 'asc' };
 
-  const $ = (id)=>document.getElementById(id);
+    const $ = (id)=>document.getElementById(id);
+    let rows, status, pagination;
 
-  let rows, status, pagination;
+    // Utility: small debounce for search inputs
+    function debounce(fn, wait=220){
+      let t;
+      return (...args)=>{
+        clearTimeout(t);
+        t = setTimeout(()=>fn.apply(null, args), wait);
+      };
+    }
 
-  function fmtInt(n){ return Intl.NumberFormat('it-IT').format(n); }
+    // Adaptive sizing based on viewport/connection
+    function adaptSettings(){
+      try{
+        if (window.innerWidth <= 420) PAGE_SIZE = 20;
+        else if (window.innerWidth <= 900) PAGE_SIZE = 30;
+        else PAGE_SIZE = 50;
 
-  /* ===== Helpers quantità ===== */
-  function normalizeQty(raw) {
-    const s = (raw ?? "").toString().trim();
-    if (!s) return "";
-    if (/^su\s*richiesta$/i.test(s)) return "Su richiesta";
-    if (/^(nan|null|none)$/i.test(s)) return "Su richiesta";
-    return s;
-  }
-  function qtyNumber(raw) {
-    const s = normalizeQty(raw);
-    const n = Number(s.replace(",", "."));
-    return Number.isFinite(n) ? n : null;
-  }
-  function formatQuantita(raw) {
-    const s = normalizeQty(raw);
-    if (!s) return "—";
-    const n = Number(s.replace(",", "."));
-    return Number.isFinite(n) ? String(n) : s;
-  }
-
-  /* ===== Filtri, sort, paging ===== */
-  function applyFilters(src){
-    const q = $('q').value.trim().toLowerCase();
-    const p = $('produttore').value;
-    const f = $('formato').value;
-    const showReserved = $('riservato').value === 'yes';
-    return src.filter(r=>{
-      if(!showReserved && r.riservato === 'YES') return false;
-      if(p && r.produttore !== p) return false;
-      if(f && r.formato !== f) return false;
-      if(q){
-        const hay = (r.produttore + ' ' + r.etichetta).toLowerCase();
-        if(!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }
-
-  function sortData(arr){
-    const {by,dir} = sort;
-    const s = [...arr].sort((a,b)=>{
-      if (by === 'quantità') {
-        const na = qtyNumber(a["quantità"] ?? a.quantita);
-        const nb = qtyNumber(b["quantità"] ?? b.quantita);
-        if (na === null && nb === null) {
-          const sa = normalizeQty(a["quantità"] ?? a.quantita).toLowerCase();
-          const sb = normalizeQty(b["quantità"] ?? b.quantita).toLowerCase();
-          if (sa<sb) return -1; if (sa>sb) return 1; return 0;
+        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (conn && conn.effectiveType){
+          if (conn.effectiveType.includes('2g') || conn.saveData) {
+            AUTO_REFRESH_MS = 60000; // slower on weak connections or Save-Data
+          } else if (conn.effectiveType.includes('3g')) {
+            AUTO_REFRESH_MS = 45000;
+          } else {
+            AUTO_REFRESH_MS = 30000;
+          }
+        } else {
+          AUTO_REFRESH_MS = 30000;
         }
-        if (na === null) return 1;
-        if (nb === null) return -1;
-        return na - nb;
-      }
-      const va = (a[by] ?? '').toString().toLowerCase();
-      const vb = (b[by] ?? '').toString().toLowerCase();
-      if(va<vb) return -1; if(va>vb) return 1; return 0;
-    });
-    return dir==='asc'? s : s.reverse();
-  }
-
-  function buildPagination(total, current){
-    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-    const btn = (label, target, disabled=false, active=false) =>
-      `<button class="pager ${disabled?'disabled':''} ${active?'active':''}" data-page="${target}" ${disabled?'disabled':''}>${label}</button>`;
-
-    let html = '';
-    html += btn('‹', current - 1, current <= 0);
-
-    const maxButtons = 7;
-    const lastIndex = totalPages - 1;
-    let start = Math.max(0, current - 3);
-    let end = Math.min(totalPages, start + maxButtons);
-    if (end - start < maxButtons) start = Math.max(0, end - maxButtons);
-
-    if (start > 0){
-      html += btn('1', 0, false, current===0);
-      if (start > 1) html += '<span class="dots">…</span>';
-    }
-    for (let i = start; i < end; i++){
-      html += btn(String(i+1), i, false, current===i);
-    }
-    if (end < totalPages){
-      if (end < totalPages - 1) html += '<span class="dots">…</span>';
-      html += btn(String(totalPages), lastIndex, false, current===lastIndex);
-    }
-    html += btn('›', current + 1, current >= lastIndex);
-    pagination.innerHTML = html;
-  }
-
-  function paginate(arr){
-    const start = page * PAGE_SIZE;
-    return arr.slice(start, start + PAGE_SIZE);
-  }
-
-  function clampPage(total){
-    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-    if (page >= totalPages) page = totalPages - 1;
-    if (page < 0) page = 0;
-  }
-
-  function render(){
-    const filtered = applyFilters(data);
-    const sorted   = sortData(filtered);
-    clampPage(sorted.length);
-    const pageData = paginate(sorted);
-
-    rows.innerHTML = '';
-    if(pageData.length===0){
-      rows.innerHTML = '<tr><td colspan="7" class="empty">Nessun risultato</td></tr>';
-    } else {
-      for(const r of pageData){
-        const qRaw = r["quantità"] ?? r.quantita;
-        const qNum = qtyNumber(qRaw);
-        const qTxt = formatQuantita(qRaw);
-        const low = qNum !== null && qNum <= LOW_STOCK_THRESHOLD;
-
-        rows.insertAdjacentHTML('beforeend', `
-          <tr>
-            <td></td>
-            <td>${r.produttore}</td>
-            <td>${r.etichetta}</td>
-            <td class="hide-sm">${r.formato ?? ''}</td>
-            <td class="hide-sm">${r.box ?? ''}</td>
-            <td><span class="qty-badge ${low?'qty-low':''}">${qTxt}</span></td>
-            <td>${r.riservato==='YES' ? '<span class="badge yes">YES</span>' : '<span class="badge no">NO</span>'}</td>
-          </tr>
-        `);
+      }catch(e){
+        AUTO_REFRESH_MS = 30000;
       }
     }
-    const total = filtered.length;
-    const from = total ? (page*PAGE_SIZE+1) : 0;
-    const to = Math.min((page+1)*PAGE_SIZE, total);
-    $('status').textContent = total ? `${from}–${to} di ${fmtInt(total)} risultati` : '0 risultati';
 
-    buildPagination(total, page);
-  }
+    adaptSettings();
 
-  function unique(list, key){
-    const set = new Set(list.map(x=>x[key]).filter(Boolean));
-    return Array.from(set).sort();
-  }
+    // Helpers
+    const numberFormatter = new Intl.NumberFormat('it-IT');
 
-  function populateFilters(){
-    const ps = unique(data, 'produttore');
-    const fs = unique(data, 'formato');
-    $('produttore').innerHTML = '<option value="">Tutti</option>' + ps.map(x=>`<option>${x}</option>`).join('');
-    $('formato').innerHTML = '<option value="">Tutti</option>' + fs.map(x=>`<option>${x}</option>`).join('');
-  }
+    function fmtInt(n){ return numberFormatter.format(n); }
 
-  /* ===== API ===== */
-  function keyOf(r){
-    return [r.produttore, r.etichetta, r.formato].join('||');
-  }
+    function normalizeQty(raw) {
+      const s = (raw ?? "").toString().trim();
+      if (!s) return "";
+      if (/^su\s*richiesta$/i.test(s)) return "Su richiesta";
+      if (/^(nan|null|none)$/i.test(s)) return "Su richiesta";
+      return s;
+    }
+    function qtyNumber(raw) {
+      const s = normalizeQty(raw);
+      const n = Number(s.replace(",", "."));
+      return Number.isFinite(n) ? n : null;
+    }
+    function formatQuantita(raw) {
+      const s = normalizeQty(raw);
+      if (!s) return "—";
+      const n = Number(s.replace(",", "."));
+      return Number.isFinite(n) ? String(n) : s;
+    }
 
-  async function initialLoad(){
-    rows.innerHTML = '<tr><td colspan="7" class="empty">Caricamento…</td></tr>';
-    const showReserved = $('riservato').value === 'yes';
-    const params = new URLSearchParams();
-    if(showReserved) params.set('include_reserved','true');
-    const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
-    const r = await fetch(url, {cache:'no-store'});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    data = await r.json();
-    populateFilters();
-    render();
-  }
+    // Filters, sort and paging
+    function applyFilters(src){
+      const q = $('q').value.trim().toLowerCase();
+      const p = $('produttore').value;
+      const f = $('formato').value;
+      const showReserved = $('riservato').value === 'yes';
+      return src.filter(r=>{
+        if(!showReserved && r.riservato === 'YES') return false;
+        if(p && r.produttore !== p) return false;
+        if(f && r.formato !== f) return false;
+        if(q){
+          const hay = ((r.produttore||'') + ' ' + (r.etichetta||'')).toLowerCase();
+          if(!hay.includes(q)) return false;
+        }
+        return true;
+      });
+    }
 
-  async function updateQuantities(){
-    try{
+    function sortData(arr){
+      const {by,dir} = sort;
+      const s = [...arr].sort((a,b)=>{
+        if (by === 'quantità') {
+          const na = qtyNumber(a["quantità"] ?? a.quantita);
+          const nb = qtyNumber(b["quantità"] ?? b.quantita);
+          if (na === null && nb === null) {
+            const sa = normalizeQty(a["quantità"] ?? a.quantita).toLowerCase();
+            const sb = normalizeQty(b["quantità"] ?? b.quantita).toLowerCase();
+            if (sa<sb) return -1; if (sa>sb) return 1; return 0;
+          }
+          if (na === null) return 1;
+          if (nb === null) return -1;
+          return na - nb;
+        }
+        const va = (a[by] ?? '').toString().toLowerCase();
+        const vb = (b[by] ?? '').toString().toLowerCase();
+        if(va<vb) return -1; if(va>vb) return 1; return 0;
+      });
+      return dir==='asc'? s : s.reverse();
+    }
+
+    function buildPagination(total, current){
+      const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      const btn = (label, target, disabled=false, active=false) =>
+        `<button class="pager ${disabled?'disabled':''} ${active?'active':''}" data-page="${target}" ${disabled?'disabled':''} aria-label="Pagina ${label}">${label}</button>`;
+
+      let html = '';
+      html += btn('‹', current - 1, current <= 0);
+
+      const maxButtons = 7;
+      const lastIndex = totalPages - 1;
+      let start = Math.max(0, current - 3);
+      let end = Math.min(totalPages, start + maxButtons);
+      if (end - start < maxButtons) start = Math.max(0, end - maxButtons);
+
+      if (start > 0){
+        html += btn('1', 0, false, current===0);
+        if (start > 1) html += '<span class="dots" aria-hidden="true">…</span>';
+      }
+      for (let i = start; i < end; i++){
+        html += btn(String(i+1), i, false, current===i);
+      }
+      if (end < totalPages){
+        if (end < totalPages - 1) html += '<span class="dots" aria-hidden="true">…</span>';
+        html += btn(String(totalPages), lastIndex, false, current===lastIndex);
+      }
+      html += btn('›', current + 1, current >= lastIndex);
+      pagination.innerHTML = html;
+    }
+
+    function paginate(arr){
+      const start = page * PAGE_SIZE;
+      return arr.slice(start, start + PAGE_SIZE);
+    }
+
+    function clampPage(total){
+      const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      if (page >= totalPages) page = totalPages - 1;
+      if (page < 0) page = 0;
+    }
+
+    // Render rows - include data-label for responsive "card" view
+    function render(){
+      const filtered = applyFilters(data);
+      const sorted   = sortData(filtered);
+      clampPage(sorted.length);
+      const pageData = paginate(sorted);
+
+      rows.innerHTML = '';
+      if(pageData.length===0){
+        rows.innerHTML = '<tr><td colspan="7" class="empty">Nessun risultato</td></tr>';
+      } else {
+        for(const r of pageData){
+          const qRaw = r["quantità"] ?? r.quantita;
+          const qNum = qtyNumber(qRaw);
+          const qTxt = formatQuantita(qRaw);
+          const low = qNum !== null && qNum <= LOW_STOCK_THRESHOLD;
+
+          // render with data-label attributes for small-screen card layout
+          rows.insertAdjacentHTML('beforeend', `
+            <tr>
+              <td data-label=""></td>
+              <td data-label="Produttore">${escapeHtml(r.produttore)}</td>
+              <td data-label="Etichetta">${escapeHtml(r.etichetta)}</td>
+              <td class="hide-sm" data-label="Formato">${escapeHtml(r.formato ?? '')}</td>
+              <td class="hide-sm" data-label="Box">${escapeHtml(r.box ?? '')}</td>
+              <td data-label="Quantità"><span class="qty-badge ${low?'qty-low':''}">${escapeHtml(qTxt)}</span></td>
+              <td data-label="Riservato">${r.riservato==='YES' ? '<span class="badge yes">YES</span>' : '<span class="badge no">NO</span>'}</td>
+            </tr>
+          `);
+        }
+      }
+      const total = filtered.length;
+      const from = total ? (page*PAGE_SIZE+1) : 0;
+      const to = Math.min((page+1)*PAGE_SIZE, total);
+      status.textContent = total ? `${from}–${to} di ${fmtInt(total)} risultati` : '0 risultati';
+
+      buildPagination(total, page);
+    }
+
+    // simple escaping to avoid accidental HTML injection from API
+    function escapeHtml(s){
+      if (s === undefined || s === null) return '';
+      return String(s)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
+    }
+
+    function unique(list, key){
+      const set = new Set(list.map(x=>x[key]).filter(Boolean));
+      return Array.from(set).sort();
+    }
+
+    function populateFilters(){
+      const ps = unique(data, 'produttore');
+      const fs = unique(data, 'formato');
+      $('produttore').innerHTML = '<option value="">Tutti</option>' + ps.map(x=>`<option>${escapeHtml(x)}</option>`).join('');
+      $('formato').innerHTML = '<option value="">Tutti</option>' + fs.map(x=>`<option>${escapeHtml(x)}</option>`).join('');
+    }
+
+    // API helpers
+    function keyOf(r){
+      return [r.produttore, r.etichetta, r.formato].join('||');
+    }
+
+    // initial load
+    async function initialLoad(){
+      rows.innerHTML = '<tr><td colspan="7" class="empty">Caricamento…</td></tr>';
       const showReserved = $('riservato').value === 'yes';
       const params = new URLSearchParams();
       if(showReserved) params.set('include_reserved','true');
       const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
       const r = await fetch(url, {cache:'no-store'});
       if(!r.ok) throw new Error('HTTP '+r.status);
-      const latest = await r.json();
+      data = await r.json();
+      populateFilters();
+      render();
+    }
 
-      const map = new Map(latest.map(x => [keyOf(x), x["quantità"] ?? x.quantita]));
-      let changed = false;
+    // Update only quantities to be efficient (auto-refresh)
+    let autoRefreshId = null;
+    async function updateQuantities(){
+      try{
+        const showReserved = $('riservato').value === 'yes';
+        const params = new URLSearchParams();
+        if(showReserved) params.set('include_reserved','true');
+        const url = ENDPOINT + (params.toString()? ('?'+params.toString()):'');
+        const r = await fetch(url, {cache:'no-store'});
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        const latest = await r.json();
 
-      for(const row of data){
-        const k = keyOf(row);
-        if(map.has(k)){
-          const newQ = map.get(k);
-          const oldQ = row["quantità"] ?? row.quantita;
-          if(String(newQ) !== String(oldQ)){
-            if ("quantità" in row) row["quantità"] = newQ; else row.quantita = newQ;
-            changed = true;
+        const map = new Map(latest.map(x => [keyOf(x), x["quantità"] ?? x.quantita]));
+        let changed = false;
+
+        for(const row of data){
+          const k = keyOf(row);
+          if(map.has(k)){
+            const newQ = map.get(k);
+            const oldQ = row["quantità"] ?? row.quantita;
+            if(String(newQ) !== String(oldQ)){
+              if ("quantità" in row) row["quantità"] = newQ; else row.quantita = newQ;
+              changed = true;
+            }
           }
         }
+        if(changed) render();
+      }catch(e){
+        // keep silent but accessible in console
+        console.warn("Auto-refresh failed:", e && e.message ? e.message : e);
+      } finally {
+        scheduleAutoRefresh();
       }
-      if(changed) render();
-    }catch(e){
-      console.warn("Auto-refresh fallito:", e.message);
     }
-  }
 
-  function wireUI(){
-    $('q').addEventListener('input', ()=>{ page=0; render(); });
-    $('produttore').addEventListener('change', ()=>{ page=0; render(); });
-    $('formato').addEventListener('change', ()=>{ page=0; render(); });
-    $('riservato').addEventListener('change', ()=>{ initialLoad(); });
+    // schedule/cancel auto-refresh with visibility handling
+    function scheduleAutoRefresh(){
+      cancelAutoRefresh();
+      // don't schedule if page not visible
+      if (document.hidden) return;
+      autoRefreshId = setTimeout(updateQuantities, AUTO_REFRESH_MS);
+    }
+    function cancelAutoRefresh(){
+      if (autoRefreshId) { clearTimeout(autoRefreshId); autoRefreshId = null; }
+    }
 
-    document.querySelectorAll('th[data-sort]').forEach(th=>{
-      th.style.cursor='pointer';
-      th.addEventListener('click',()=>{
-        const by = th.getAttribute('data-sort');
-        if(sort.by===by){ sort.dir = (sort.dir==='asc'?'desc':'asc'); }
-        else { sort.by=by; sort.dir='asc'; }
-        page = 0;
-        render();
+    function wireUI(){
+      // debounce search input to avoid excessive renders
+      $('q').addEventListener('input', debounce(()=>{ page=0; render(); }, 180));
+      $('produttore').addEventListener('change', ()=>{ page=0; render(); });
+      $('formato').addEventListener('change', ()=>{ page=0; render(); });
+      $('riservato').addEventListener('change', ()=>{ adaptSettings(); initialLoad(); });
+
+      document.querySelectorAll('th[data-sort]').forEach(th=>{
+        th.style.cursor='pointer';
+        th.addEventListener('click',()=>{
+          const by = th.getAttribute('data-sort');
+          if(sort.by===by){ sort.dir = (sort.dir==='asc'?'desc':'asc'); }
+          else { sort.by=by; sort.dir='asc'; }
+          page = 0;
+          render();
+        });
       });
-    });
 
-    $('pagination').addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-page]');
-      if(!btn || btn.disabled) return;
-      const target = parseInt(btn.dataset.page, 10);
-      if(Number.isFinite(target)){
-        page = target;
-        render();
-        window.scrollTo({top:0, behavior:'smooth'});
-      }
-    });
-  }
+      $('pagination').addEventListener('click', (e)=>{
+        const btn = e.target.closest('button[data-page]');
+        if(!btn || btn.disabled) return;
+        const target = parseInt(btn.dataset.page, 10);
+        if(Number.isFinite(target)){
+          page = target;
+          render();
+          if ('scrollBehavior' in document.documentElement.style) window.scrollTo({top:0, behavior:'smooth'});
+          else window.scrollTo(0,0);
+        }
+      });
 
-  function init(){
-    rows = $('rows');
-    status = $('status');
-    pagination = $('pagination');
-    wireUI();
-    initialLoad().catch(e=>{
-      rows.innerHTML = `<tr><td colspan="7" class="empty">Errore di caricamento: ${e.message}</td></tr>`;
-    });
-    setInterval(updateQuantities, AUTO_REFRESH_MS);
-  }
+      // pause auto-refresh when not visible
+      document.addEventListener('visibilitychange', ()=>{
+        if (document.hidden) cancelAutoRefresh();
+        else scheduleAutoRefresh();
+      });
 
-  // Esegui subito se il DOM è già pronto, altrimenti attendi
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', init, {once:true});
-  } else {
-    init();
-  }
-})();
-</script>
+      // adapt on resize
+      window.addEventListener('resize', debounce(()=>{ adaptSettings(); render(); }, 300));
+    }
+
+    function init(){
+      rows = $('rows');
+      status = $('status');
+      pagination = $('pagination');
+      wireUI();
+
+      initialLoad().catch(e=>{
+        rows.innerHTML = `<tr><td colspan="7" class="empty">Errore di caricamento: ${escapeHtml(e && e.message ? e.message : String(e))}</td></tr>`;
+      });
+
+      // ensure auto-refresh uses adapted timing and doesn't run when tab hidden
+      scheduleAutoRefresh();
+    }
+
+    // run
+    if (document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', init, {once:true});
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>
