@@ -139,7 +139,7 @@
     .hint{font-size:12px;color:var(--muted)}
     .toast{
       position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
-      background:#0f141d;border:1px solid var(--border);color:var(--text);
+      background:#0f141d;border:1px solid var(--border);color:#var(--text);
       padding:10px 14px;border-radius:10px;font-size:14px;display:none;z-index:60
     }
     .err{color:#ffb3b3}
@@ -171,7 +171,7 @@
         </div>
         <div class="contact-sep"></div>
         <div class="contact-item">
-          <!-- Sito (testo thewinecaveau.com -> link a shop.thewinecaveau.com) -->
+          <!-- Sito -->
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm6.93 8h-3.26A13.2 13.2 0 0014 4.36 8.02 8.02 0 0118.93 10zM12 4.06c.86 0 2.34 1.7 3.06 5.94H8.94C9.66 5.76 11.14 4.06 12 4.06zM5.07 10A8.02 8.02 0 0110 4.36 13.2 13.2 0 008.33 10H5.07zm0 4h3.26A13.2 13.2 0 0010 19.64 8.02 8.02 0 015.07 14zm6.93 5.94c-.86 0-2.34-1.7-3.06-5.94h6.12c-.72 4.24-2.2 5.94-3.06 5.94zM14 19.64A13.2 13.2 0 0015.67 14h3.26A8.02 8.02 0 0114 19.64z"/></svg>
           <a href="https://shop.thewinecaveau.com" target="_blank" rel="noopener">thewinecaveau.com</a>
         </div>
@@ -292,7 +292,9 @@
   (function(){
     const API_BASE = "https://api.thewinecaveau.com";
     const ENDPOINT = API_BASE + "/availability";
-    const CONTACT_ENDPOINT = API_BASE + "/contact"; // endpoint backend per l'invio email
+    // ✅ endpoint corretto del backend per invio email
+    const CONTACT_ENDPOINT = API_BASE + "/contact/request";
+
     const LOW_STOCK_THRESHOLD = 6;
     const AUTO_REFRESH_MS = 30000;
     const pageSize = ()=> (matchMedia("(max-width:640px)").matches ? 20 : 50);
@@ -457,12 +459,12 @@
           societa: f.societa.value.trim() || null,
           email: f.email.value.trim(),
           telefono: f.telefono.value.trim(),
-          messaggio: f.messaggio.value.trim(),
+          richiesta: f.messaggio.value.trim(),
           hp: f.hp.value.trim() // honeypot
         };
         // Blocking bot/honeypot + required
         if (data.hp){ return; }
-        if (!data.nome || !data.cognome || !data.email || !data.telefono || !data.messaggio){
+        if (!data.nome || !data.cognome || !data.email || !data.telefono || !data.richiesta){
           $("formHint").innerHTML = '<span class="err">Compila tutti i campi obbligatori.</span>';
           return;
         }
@@ -474,7 +476,10 @@
             body:JSON.stringify(data),
             cache:"no-store",
           });
-          if(!res.ok) throw new Error("HTTP "+res.status);
+          if(!res.ok){
+            const txt = await res.text().catch(()=> "");
+            throw new Error(`HTTP ${res.status} ${txt}`);
+          }
           closeModal();
           showToast("Richiesta inviata. Ti risponderemo a breve.");
         }catch(e){
