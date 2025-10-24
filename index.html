@@ -18,15 +18,10 @@
     .container{max-width:1200px;margin:0 auto;padding:16px clamp(12px,4vw,24px);padding-bottom:24px}
 
     /* Header */
-    <header>
-      <img id="logo" class="logo" alt="TWC Logo"
-        src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
-      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-        <div class="title">Disponibilità Ho.Re.Ca.</div>
-        <button class="btn primary" id="adminBtn" type="button" aria-label="Area amministratore">Admin</button>
-      </div>
-    </header>
-
+    header{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+    .logo{height:120px;width:auto}
+    .title{font-size:clamp(20px,3.6vw,28px);font-weight:800;letter-spacing:.2px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;width:100%}
 
     /* Contact banner */
     .contactbar{
@@ -49,7 +44,7 @@
     .btn:hover{background:var(--btn-h)}
     .btn.primary{background:var(--brand);border-color:#6c4fe8;color:#0d0f15;font-weight:700}
     .btn.primary:hover{filter:brightness(0.95)}
-    /* Call-to-action more visible */
+    /* Call-to-action più visibile */
     .btn.cta{background:var(--accent);border-color:#2f7d59;color:#0d0f15;font-weight:800;box-shadow:0 6px 22px rgba(91,228,155,.2)}
     .btn.cta:hover{filter:brightness(0.95)}
     .btn.cta:focus{outline:2px solid #2f7d59;outline-offset:2px}
@@ -152,7 +147,7 @@
     .close-x{background:transparent;border:0;color:var(--muted);font-size:22px;cursor:pointer}
     .hint{font-size:12px;color:var(--muted)}
 
-    /* Toast (confermato in verde e più centrale) */
+    /* Toast (verde e centrale) */
     .toast{
       position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
       background:#0f141d;border:1px solid var(--border);color:var(--text);
@@ -172,7 +167,10 @@
     <header>
       <img id="logo" class="logo" alt="TWC Logo"
         src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
-      <div><div class="title">Disponibilità Ho.Re.Ca.</div></div>
+      <div class="header-row">
+        <div class="title">Disponibilità Ho.Re.Ca.</div>
+        <button class="btn primary" id="adminBtn" type="button" aria-label="Area amministratore">Admin</button>
+      </div>
     </header>
 
     <!-- Banner contatti -->
@@ -310,11 +308,6 @@
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  // Pulsante Admin (per ora inattivo)
-$("adminBtn").addEventListener("click", () => {
-  showToast("Funzione Admin non ancora disponibile.", "success");});
-
-
   <script>
   (function(){
     const API_BASE = "https://api.thewinecaveau.com";
@@ -402,7 +395,6 @@ $("adminBtn").addEventListener("click", () => {
           return pa - pb;
         }
         if(by==="annata"){
-          // ordina annata come numero desc/asc naturale; stringhe non numeriche alla fine
           const aa = Number(a.annata), bb = Number(b.annata);
           if(Number.isFinite(aa) && Number.isFinite(bb)) return aa - bb;
           const sa=(a.annata??"").toString().toLowerCase();
@@ -511,6 +503,7 @@ $("adminBtn").addEventListener("click", () => {
       $("formato").addEventListener("change", ()=>{ page=0; render(); });
       $("riservato").addEventListener("change", ()=>{ initialLoad(); });
 
+      // Sort click
       document.querySelectorAll("th[data-sort]").forEach(th=>{
         th.style.cursor='pointer';
         th.addEventListener("click",()=>{
@@ -521,6 +514,7 @@ $("adminBtn").addEventListener("click", () => {
         });
       });
 
+      // Pagination
       $("pagination").addEventListener("click",(e)=>{
         const btn=e.target.closest("button[data-page]"); if(!btn||btn.disabled) return;
         const target=parseInt(btn.dataset.page,10);
@@ -529,7 +523,7 @@ $("adminBtn").addEventListener("click", () => {
 
       matchMedia("(max-width:640px)").addEventListener("change", ()=>{ page=0; render(); });
 
-      // Modal form
+      // Modal contatti
       const modal=$("contactModal");
       $("openContactBtn").addEventListener("click", ()=>{ modal.style.display="flex"; setTimeout(()=>{$("nome").focus();},50); });
       function closeModal(){ modal.style.display="none"; $("contactForm").reset(); $("formHint").textContent=''; }
@@ -539,7 +533,7 @@ $("adminBtn").addEventListener("click", () => {
       $("contactForm").addEventListener("submit", async (ev)=>{
         ev.preventDefault();
         const f=ev.target;
-        const data={
+        const payload={
           nome: f.nome.value.trim(),
           cognome: f.cognome.value.trim(),
           societa: f.societa.value.trim() || null,
@@ -548,8 +542,8 @@ $("adminBtn").addEventListener("click", () => {
           richiesta: f.messaggio.value.trim(),
           hp: f.hp.value.trim()
         };
-        if (data.hp){ return; }
-        if (!data.nome || !data.cognome || !data.email || !data.telefono || !data.richiesta){
+        if (payload.hp){ return; }
+        if (!payload.nome || !payload.cognome || !payload.email || !payload.telefono || !payload.richiesta){
           $("formHint").innerHTML = '<span class="err">Compila tutti i campi obbligatori.</span>';
           return;
         }
@@ -558,7 +552,7 @@ $("adminBtn").addEventListener("click", () => {
           const res=await fetch(CONTACT_ENDPOINT,{
             method:"POST",
             headers:{"Content-Type":"application/json"},
-            body:JSON.stringify(data),
+            body:JSON.stringify(payload),
             cache:"no-store",
           });
           if(!res.ok){
@@ -575,6 +569,14 @@ $("adminBtn").addEventListener("click", () => {
           $("sendContact").disabled=false; $("sendContact").textContent="Invia";
         }
       });
+
+      // Pulsante Admin (inattivo)
+      const adminBtn = $("adminBtn");
+      if (adminBtn){
+        adminBtn.addEventListener("click", () => {
+          showToast("Funzione Admin non ancora disponibile.", "success");
+        });
+      }
     }
 
     function showToast(msg,type='success'){
