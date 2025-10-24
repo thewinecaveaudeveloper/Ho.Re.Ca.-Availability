@@ -38,11 +38,15 @@
     .btn{
       appearance:none;border:1px solid var(--border);background:var(--btn);
       color:var(--text);padding:10px 14px;border-radius:10px;font-size:14px;
-      cursor:pointer;transition:background .15s ease,border-color .15s ease
+      cursor:pointer;transition:background .15s ease,border-color .15s ease,filter .15s ease,box-shadow .15s ease
     }
     .btn:hover{background:var(--btn-h)}
     .btn.primary{background:var(--brand);border-color:#6c4fe8;color:#0d0f15;font-weight:700}
     .btn.primary:hover{filter:brightness(0.95)}
+    /* Call-to-action more visible */
+    .btn.cta{background:var(--accent);border-color:#2f7d59;color:#0d0f15;font-weight:800;box-shadow:0 6px 22px rgba(91,228,155,.2)}
+    .btn.cta:hover{filter:brightness(0.95)}
+    .btn.cta:focus{outline:2px solid #2f7d59;outline-offset:2px}
 
     /* Panel + toolbar */
     .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px}
@@ -69,7 +73,7 @@
     thead th:nth-child(3){width:10%}
     thead th:nth-child(4){width:12%}
     thead th:nth-child(5){width:12%}
-    thead th:nth-child(6){width:10%}
+    thead th:nth-child(6){width:10%; text-align:right; font-variant-numeric: tabular-nums}
     thead th:nth-child(7){width:8%}
 
     tbody td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:14px;line-height:1.25;vertical-align:middle}
@@ -79,7 +83,7 @@
       background:var(--chip);border:1px solid var(--border);font-size:13px;white-space:nowrap;
     }
     .qty-low{background:#231416;border-color:#3a1a1a;color:#ffb3b3}
-    .price{text-align:right;white-space:nowrap}
+    .price{text-align:right;white-space:nowrap; font-variant-numeric: tabular-nums}
     .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;border:1px solid var(--border)}
     .badge.no{background:#101a13;color:#a8f0c2;border-color:#244c36}
     .badge.yes{background:#241313;color:#ffbdbd;border-color:#4a1e1e}
@@ -141,11 +145,17 @@
     .modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
     .close-x{background:transparent;border:0;color:var(--muted);font-size:22px;cursor:pointer}
     .hint{font-size:12px;color:var(--muted)}
+
+    /* Toast (confermato in verde e più centrale) */
     .toast{
-      position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
-      background:#0f141d;border:1px solid var(--border);color:#var(--text);
-      padding:10px 14px;border-radius:10px;font-size:14px;display:none;z-index:60
+      position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+      background:#0f141d;border:1px solid var(--border);color:var(--text);
+      padding:12px 16px;border-radius:12px;font-size:15px;display:none;z-index:60;
+      box-shadow:0 8px 28px rgba(0,0,0,.35);min-width:280px;text-align:center
     }
+    .toast.success{background:var(--accent);border-color:#2f7d59;color:#0d0f15;font-weight:700}
+    .toast.error{background:#3a1a1a;border-color:#4a1e1e;color:#ffbdbd}
+
     .err{color:#ffb3b3}
     .visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
     @media (max-width:880px){ .logo{height:90px} .contact-sep{display:none} }
@@ -181,7 +191,7 @@
         </div>
       </div>
       <div class="contact-actions">
-        <button class="btn" id="openContactBtn" type="button">Invia richiesta</button>
+        <button class="btn cta" id="openContactBtn" type="button" aria-label="Invia una richiesta di disponibilità">Invia richiesta</button>
       </div>
     </div>
 
@@ -292,7 +302,7 @@
   </div>
 
   <!-- Toast -->
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
   (function(){
@@ -454,7 +464,7 @@
       rows.innerHTML = '<tr><td colspan="7" class="empty">Caricamento…</td></tr>';
       const showReserved=$("riservato").value==="yes";
       const params=new URLSearchParams(); if(showReserved) params.set("include_reserved","true");
-      const url=ENDPOINT+(params.toString()?('?'+params.toString()):'');
+      const url=ENDPOINT+(params.toString()?'?'+params.toString():'');
       const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
       data=await r.json();
       populateFilters(); render();
@@ -465,7 +475,7 @@
       try{
         const showReserved=$("riservato").value==="yes";
         const params=new URLSearchParams(); if(showReserved) params.set("include_reserved","true");
-        const url=ENDPOINT+(params.toString()?('?'+params.toString()):'');
+        const url=ENDPOINT+(params.toString()?'?'+params.toString():'');
         const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
         const latest=await r.json();
         const map=new Map(latest.map(x=>[keyOf(x), {q:x["quantità"]??x.quantita, p:x.prezzo}]));
@@ -545,18 +555,21 @@
             throw new Error(`HTTP ${res.status} ${txt}`);
           }
           closeModal();
-          showToast("Richiesta inviata. Ti risponderemo a breve.");
+          showToast("Richiesta inviata. Ti risponderemo a breve.", 'success');
         }catch(e){
           $("formHint").innerHTML = '<span class="err">Invio non riuscito. Riprova più tardi.</span>';
           console.error("Contact error:", e);
+          showToast("Invio non riuscito. Riprova più tardi.", 'error');
         }finally{
           $("sendContact").disabled=false; $("sendContact").textContent="Invia";
         }
       });
     }
 
-    function showToast(msg){
-      const t=$("toast"); t.textContent=msg; t.style.display="block";
+    function showToast(msg,type='success'){
+      const t=$("toast");
+      t.textContent=msg; t.className='toast ' + (type==='error'?'error':'success');
+      t.style.display="block";
       setTimeout(()=>{ t.style.display="none"; }, 3000);
     }
 
@@ -566,6 +579,7 @@
       initialLoad().catch(e=>{
         rows.innerHTML=`<tr><td colspan="7" class="empty">Errore di caricamento. Verifica connessione o riprova.</td></tr>`;
         console.error("Errore initialLoad:", e);
+        showToast("Errore di caricamento dati", 'error');
       });
       setInterval(updateShallow, AUTO_REFRESH_MS);
     }
