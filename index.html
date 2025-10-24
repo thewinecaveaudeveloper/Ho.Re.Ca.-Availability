@@ -18,9 +18,15 @@
     .container{max-width:1200px;margin:0 auto;padding:16px clamp(12px,4vw,24px);padding-bottom:24px}
 
     /* Header */
-    header{display:flex;align-items:center;gap:16px;margin-bottom:8px}
-    .logo{height:120px;width:auto}
-    .title{font-size:clamp(20px,3.6vw,28px);font-weight:800;letter-spacing:.2px}
+    <header>
+      <img id="logo" class="logo" alt="TWC Logo"
+        src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+        <div class="title">Disponibilità Ho.Re.Ca.</div>
+        <button class="btn primary" id="adminBtn" type="button" aria-label="Area amministratore">Admin</button>
+      </div>
+    </header>
+
 
     /* Contact banner */
     .contactbar{
@@ -228,7 +234,7 @@
               <th data-sort="annata">Annata</th>
               <th data-sort="formato">Formato</th>
               <th data-sort="quantità">Quantità</th>
-              <th data-sort="prezzo">Prezzo iva incl.</th>
+              <th data-sort="prezzo">Prezzo (iva incl.)</th>
               <th>Riservato</th>
             </tr>
           </thead>
@@ -303,6 +309,11 @@
 
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  // Pulsante Admin (per ora inattivo)
+$("adminBtn").addEventListener("click", () => {
+  showToast("Funzione Admin non ancora disponibile.", "success");});
+
 
   <script>
   (function(){
