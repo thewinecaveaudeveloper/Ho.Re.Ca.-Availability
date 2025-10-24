@@ -42,12 +42,16 @@
       cursor:pointer;transition:background .15s ease,border-color .15s ease,filter .15s ease,box-shadow .15s ease
     }
     .btn:hover{background:var(--btn-h)}
-    .btn.primary{background:var(--brand);border-color:#ebc438;color:#0d0f15;font-weight:700}
+    .btn.primary{background:var(--brand);border-color:#6c4fe8;color:#0d0f15;font-weight:700}
     .btn.primary:hover{filter:brightness(0.95)}
-    /* Call-to-action più visibile */
+    /* CTA più visibile */
     .btn.cta{background:var(--accent);border-color:#2f7d59;color:#0d0f15;font-weight:800;box-shadow:0 6px 22px rgba(91,228,155,.2)}
     .btn.cta:hover{filter:brightness(0.95)}
     .btn.cta:focus{outline:2px solid #2f7d59;outline-offset:2px}
+    /* Admin specifico */
+    .btn.admin{background:#ebc438;border-color:#c7a82f;color:#0d0f15;font-weight:800;box-shadow:0 6px 22px rgba(235,196,56,.2)}
+    .btn.admin:hover{filter:brightness(0.96)}
+    .btn.admin:focus{outline:2px solid #c7a82f;outline-offset:2px}
 
     /* Panel + toolbar */
     .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px}
@@ -169,7 +173,7 @@
         src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
       <div class="header-row">
         <div class="title">Disponibilità Ho.Re.Ca.</div>
-        <button class="btn primary" id="adminBtn" type="button" aria-label="Area amministratore">Admin</button>
+        <button class="btn admin" id="adminBtn" type="button" aria-label="Area amministratore">Admin</button>
       </div>
     </header>
 
@@ -318,7 +322,8 @@
     const AUTO_REFRESH_MS = 30000;
     const pageSize = ()=> (matchMedia("(max-width:640px)").matches ? 20 : 50);
 
-    let data = [], page = 0, sort = {by:"produttore",dir:"asc"};
+    // Ordinamento di default: prezzo crescente
+    let data = [], page = 0, sort = {by:"prezzo",dir:"asc"};
     const $ = id=>document.getElementById(id);
     let rows, pagination;
 
@@ -391,6 +396,7 @@
           const pa=parsePrice(a.prezzo), pb=parsePrice(b.prezzo);
           if(pa===null && pb===null) return 0;
           if(pa===null) return 1;
+          ifpb:null; // (no-op to keep structure clear)
           if(pb===null) return -1;
           return pa - pb;
         }
