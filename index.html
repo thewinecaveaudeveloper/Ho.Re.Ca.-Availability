@@ -170,7 +170,7 @@
   <div class="container">
     <header>
       <img id="logo" class="logo" alt="TWC Logo"
-        src="https://shop.thewinecaveau.com/wp-content/uploads/2023/03/Logo-bianco-caveau-copia-2048x2048.png" />
+        src="https://raw.githubusercontent.com/thewinecaveaudeveloper/TWC-ASSETS/main/Logo%20bianco%20caveau%20copia.png" />
       <div class="header-row">
         <div class="title">Disponibilità Ho.Re.Ca.</div>
         <button class="btn admin" id="adminBtn" type="button" aria-label="Area amministratore">Admin</button>
@@ -473,7 +473,7 @@
       rows.innerHTML = '<tr><td colspan="7" class="empty">Caricamento…</td></tr>';
       const showReserved=$("riservato").value==="yes";
       const params=new URLSearchParams(); if(showReserved) params.set("include_reserved","true");
-      const url=ENDPOINT+(params.toString()?'?'+params.toString():'');
+      const url=ENDPOINT+(params.toString()?'?'+params.toString():"");
       const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
       data=await r.json();
       populateFilters(); render();
@@ -484,7 +484,7 @@
       try{
         const showReserved=$("riservato").value==="yes";
         const params=new URLSearchParams(); if(showReserved) params.set("include_reserved","true");
-        const url=ENDPOINT+(params.toString()?'?'+params.toString():'');
+        const url=ENDPOINT+(params.toString()?'?'+params.toString():"");
         const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
         const latest=await r.json();
         const map=new Map(latest.map(x=>[keyOf(x), {q:x["quantità"]??x.quantita, p:x.prezzo}]));
